@@ -1,0 +1,34 @@
+openapi: 3.0.3
+info:
+  title: Circular Refs School API (synthetic)
+  version: 1.0.0
+paths:
+  /students/{id}:
+    get:
+      operationId: getStudent
+      summary: Student whose guardian refs students circularly
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: circular structure preserved as refs
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Student" }
+components:
+  schemas:
+    Student:
+      type: object
+      properties:
+        id: { type: string }
+        guardian: { $ref: "#/components/schemas/Guardian" }
+    Guardian:
+      type: object
+      properties:
+        id: { type: string }
+        wards:
+          type: array
+          items: { $ref: "#/components/schemas/Student" }

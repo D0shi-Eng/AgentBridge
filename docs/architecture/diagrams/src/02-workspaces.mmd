@@ -1,0 +1,48 @@
+%% AB-DIAG-02 — Workspaces and package dependency directions | Status: IMPLEMENTED
+%% قاعدة التبعية الحديدية: المصدر يتجه نحو العقود الداخلية؛ النطاق لا يعرف البنية التحتية
+flowchart LR
+  subgraph CORE["Core domain packages"]
+    SHARED["shared - types, errors, i18n, sso"]
+    PARSER["spec-parser"]
+    ANALYZER["analyzer"]
+    GEN["generator"]
+    HARD["hardening"]
+    EVAL["evaluator"]
+    AGENTS["agents"]
+    ORCH["orchestrator"]
+  end
+  subgraph PLATFORM["Platform packages"]
+    LLM["llm - provider ports"]
+    MEM["memory - L0..L4 ports + in-memory adapters"]
+    INFRA["infra - live adapters, crypto, audit chain"]
+  end
+  subgraph APPS["Applications"]
+    API["apps/api - Fastify"]
+    DASH["apps/dashboard - Next.js"]
+    CLI["apps/cli"]
+  end
+  PARSER --> SHARED
+  ANALYZER --> SHARED
+  GEN --> SHARED
+  GEN --> LLM
+  HARD --> SHARED
+  EVAL --> SHARED
+  AGENTS --> SHARED
+  AGENTS --> LLM
+  AGENTS --> HARD
+  ORCH --> CORE
+  LLM --> SHARED
+  MEM --> SHARED
+  INFRA --> SHARED
+  INFRA -. "type-only contracts" .-> MEM
+  CLI --> ORCH
+  API --> ORCH
+  API --> MEM
+  API --> INFRA
+  DASH --> API
+  classDef core fill:#e8f5e9,stroke:#2e7d32
+  classDef plat fill:#e3f2fd,stroke:#1565c0
+  classDef apps fill:#fff8e1,stroke:#b26a00
+  class SHARED,PARSER,ANALYZER,GEN,HARD,EVAL,AGENTS,ORCH core
+  class LLM,MEM,INFRA plat
+  class API,DASH,CLI apps

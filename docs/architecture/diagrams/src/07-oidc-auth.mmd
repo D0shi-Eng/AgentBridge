@@ -1,0 +1,16 @@
+%% AB-DIAG-07 — OIDC/OAuth/PKCE, sessions, workspace identity | Status: IMPLEMENTED
+%% jwksUrl وissuer يُفرض عليهما https؛ التحقق محلي بـ node:crypto؛ الجلسة معتمة مخزنة خادمياً
+flowchart TB
+  ADMIN["workspace admin - tenantAdmin role"] -- "PUT /sso/config - zod https-only issuer + jwks" --> CFG["sso_configs row - per tenant"]
+  BROWSER["browser"] -- "1. login with IdP" --> IDP["Enterprise IdP"]
+  IDP -- "2. id_token" --> CB["POST /auth/oidc/callback - public, limited"]
+  CB --> VER["oidc-verifier.ts - JWKS fetch allowlist, HTTPS pinned IP, RS256 via node:crypto, iss/aud/exp checks"]
+  VER -- "valid" --> ISSUE["internal short-lived Bearer - no IdP tokens stored"]
+  VER -- "invalid iss or expired" --> REJ["401 / 502 - no detail leak"]
+  ISSUE --> SESSION["opaque session - CSPRNG id, SHA-256 stored server-side"]
+  SESSION --> AUTHZ["auth.plugin + membership check - workspace identity = tenant"]
+  AUTHZ --> APP["tenant-scoped API access"]
+  classDef sec fill:#e8f5e9,stroke:#2e7d32
+  classDef ext fill:#eef2ff,stroke:#475569
+  class CFG,VER,ISSUE,SESSION,AUTHZ,REJ,CB sec
+  class IDP,BROWSER,ADMIN ext

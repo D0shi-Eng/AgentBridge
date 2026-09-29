@@ -1,0 +1,21 @@
+AgentBridge
+Copyright 2026 The AgentBridge Project Contributors
+
+This product includes software developed by the AgentBridge project
+contributors and is licensed under the Apache License, Version 2.0
+(see the LICENSE file at the repository root).
+
+ملحوظة بالعربية — ما هذا الملف؟
+NOTICE ملف إسناد إلزامي وفق الفقرة 4(d) من ترخيص Apache-2.0: أي توزيع
+للمشروع أو أعمال مشتقة منه يجب أن يحمل نسخة مقروءة من هذا الإسناد.
+اسم حقوق النشر أعلاه اسم جماعي للمساهمين؛ لا يُنسب المشروع لشركة أو
+جهة مسجلة حتى يعلن المالك الاسم القانوني المعتمد.
+
+This product also contains third-party assets redistributed under their
+own licenses (see THIRD_PARTY_NOTICES.md at the repository root):
+- IBM Plex Sans Arabic font files (SIL Open Font License 1.1)
+- Inter font files (SIL Open Font License 1.1)
+
+AgentBridge is not affiliated with, endorsed by, or sponsored by the
+OpenAPI Initiative, the MCP project, or the Apache Software Foundation.
+Names are used only to describe factual compatibility and licensing.

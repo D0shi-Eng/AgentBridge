@@ -1,0 +1,25 @@
+%% AB-DIAG-08 — Data isolation: PostgreSQL RLS, Redis, pgvector | Status: IMPLEMENTED
+%% العزل بنيوي: كل استعلام بtenant_id، وRLS بـ SET LOCAL داخل المعاملة، ودور تشغيل مقيد fail-closed
+flowchart TB
+  subgraph PG["PostgreSQL + pgvector"]
+    RLS["RLS ENABLE + FORCE on protected tables"]
+    TXN["prisma-scope.ts - SET LOCAL app.tenant_id inside transaction"]
+    ROLE["restricted runtime role - NOSUPERUSER, NOBYPASSRLS; boot check rejects superuser"]
+    VEC["memory_embeddings + flywheel vectors - composite key tenant_id, run_id, id"]
+  end
+  subgraph REDIS["Redis"]
+    KEYS["keys tenant:run:* - episodic events and state, TTL 7d"]
+  end
+  APP["application - every store call takes tenantId first"]
+  BOOT["fail-closed boot check - prisma-scope-hardening.ts rejects superuser, BYPASSRLS, table owners"]
+  APP --> TXN
+  TXN --> RLS
+  ROLE --> RLS
+  BOOT --> ROLE
+  APP --> KEYS
+  APP --> VEC
+  ATTACK["cross-tenant query attempt"] -. "filtered by RLS - returns empty or denied" .-> RLS
+  classDef data fill:#e3f2fd,stroke:#1565c0
+  classDef guard fill:#e8f5e9,stroke:#2e7d32
+  class RLS,TXN,VEC,KEYS data
+  class ROLE,BOOT,ATTACK guard

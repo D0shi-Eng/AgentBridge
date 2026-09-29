@@ -1,0 +1,54 @@
+%% AB-DIAG-13 — Data stores: Redis and pgvector | Status: IMPLEMENTED
+%% مخازن البيانات الحية: Redis للذاكرة العرضية والحراسة التشغيلية، وPostgreSQL+pgvector للذاكرة الدائمة والدلالية.
+%% المنافذ نفسها (packages/memory) تعمل بمحولات In-Memory افتراضياً للتطوير، وبمحولات حية عند PERSISTENCE=live.
+flowchart TB
+  subgraph PROC["Processes — apps/api · orchestrator · cli"]
+    ENG["Pipeline engine — run events, resume points, signed snapshots"]
+    OPS["Operational guards — run leasing with fencing, rate limiting, SSE quota, budget ledger"]
+  end
+
+  subgraph MEM["Memory ports — packages/memory (every call tenant-scoped)"]
+    EPIS["EpisodicStore — L1 episodic"]
+    SEM["SemanticStore — L2 durable entities"]
+    VEC["VectorStore — L3 embeddings"]
+    FLY["FlywheelStore — L4 lessons, topK, analytics"]
+  end
+
+  subgraph INMEM["In-Memory adapters — development default, no external services"]
+    IME["InMemory episodic — injectable clock and TTL"]
+    IMS["InMemory semantic — composite tenant:id keys"]
+    IMV["InMemory vector — cosine, deterministic 64-dim, normalized"]
+  end
+
+  subgraph REDISLIVE["Redis — live operational memory"]
+    RSTREAM["pipeline events stream — keys per tenant and run, TTL 7 days renewed on write"]
+    RSTATE["pipeline state hash — status and latest snapshot"]
+    ROPS["rate-limit, SSE-quota and budget-ledger keys"]
+  end
+
+  subgraph PGLIVE["PostgreSQL + pgvector — live durable memory"]
+    PL2[("L2 semantic tables — tenants, specs, pipelines, certificates, hash-chain audit")]
+    PL3[("L3 vector index — 1536-dim embeddings, cosine distance, no raw sensitive text")]
+    PL4[("L4 flywheel_lessons — redacted lessons, indexed in L3")]
+  end
+
+  ENG --> EPIS
+  ENG --> SEM
+  FLY --> SEM
+  FLY --> VEC
+  EPIS --> IME
+  SEM --> IMS
+  VEC --> IMV
+  EPIS -. "PERSISTENCE=live" .-> RSTREAM
+  EPIS -.-> RSTATE
+  OPS -. "node-redis adapters" .-> ROPS
+  SEM -. "Prisma" .-> PL2
+  VEC -. "pgvector — 1536-dim via OpenAiEmbeddingsProvider" .-> PL3
+  FLY -. "double write L2 row + L3 index, atomic delete" .-> PL4
+
+  classDef impl fill:#e8f5e9,stroke:#2e7d32
+  classDef store fill:#e3f2fd,stroke:#1565c0
+  classDef dev fill:#f5f5f5,stroke:#757575
+  class ENG,OPS,EPIS,SEM,VEC,FLY impl
+  class RSTREAM,RSTATE,ROPS,PL2,PL3,PL4 store
+  class IME,IMS,IMV dev

@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AgentBridge — from OpenAPI to a reviewable MCP server</title>
+<meta name="description" content="AgentBridge is a self-hosted web platform that converts OpenAPI 3.x specifications into reviewable MCP servers with isolated security checks and a signed, publicly verifiable certificate.">
+<link rel="icon" href="../../docs/assets/monogram.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site">
+  <div class="wrap bar">
+    <a class="brand" href="./index.html">
+      <img src="../../docs/assets/logo.svg" alt="" width="40" height="40">
+      <span>AgentBridge</span>
+    </a>
+    <nav class="langs" aria-label="Language">
+      <a href="../index.html" lang="ar">العربية</a>
+      <a href="./index.html" aria-current="page" lang="en">English</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+  <div class="hero">
+    <h1>From an OpenAPI spec to a reviewable MCP server — with a signed, verifiable certificate</h1>
+    <p>AgentBridge is a self-hosted web platform: it analyzes your API, proposes AI-agent tools, generates an MCP server, attacks it with security checks inside an isolated sandbox, then grants — or rejects — a signed certificate bound to the artifact fingerprint.</p>
+    <ul class="pills">
+      <li class="ok">Apache-2.0 license</li>
+      <li class="ok">Runs locally with no keys (mock LLM provider)</li>
+      <li class="warn">For local evaluation — production operation is not supported in this version</li>
+    </ul>
+  </div>
+
+  <section aria-labelledby="type">
+    <h2 id="type">Product type: a self-hosted web platform</h2>
+    <div class="card">
+      <p>AgentBridge is a <strong>web platform you host yourself</strong> — not an Android or iOS app, and not a desktop application. The <code>apps/</code> directory means <em>runnable application modules</em>:</p>
+      <div class="grid">
+        <div class="card"><h3>apps/api</h3><p>The Fastify web server: REST, SSE, and the public verification endpoint.</p></div>
+        <div class="card"><h3>apps/dashboard</h3><p>The Next.js web dashboard you open in a browser: upload specs, watch the pipeline, HITL.</p></div>
+        <div class="card"><h3>apps/cli</h3><p>A command-line tool that runs the same pipeline on your local files.</p></div>
+      </div>
+      <p>Two ways to use it: <strong>(1)</strong> as a web service you run on your own machine or server and open in the browser, or <strong>(2)</strong> as a developer CLI over the open-source code.</p>
+      <p class="note">Making the repository public does not start, host, or expose any service — no hosted instance of AgentBridge exists.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="site-vs-platform">
+    <h2 id="site-vs-platform">This website is not the platform</h2>
+    <div class="card">
+      <p>These pages are a <strong>static website</strong> for introduction and documentation. The full platform is what you run locally from the repository. The static site does <strong>not</strong> run:</p>
+      <ul class="checks no">
+        <li>The Fastify API or backend SSE streaming</li>
+        <li>PostgreSQL, Redis, or pgvector</li>
+        <li>The Docker sandbox or full MCP generation and checks</li>
+        <li>Real sign-in, or any secret or user-data storage</li>
+      </ul>
+      <p class="muted">No forms, no trackers or analytics, no external requests — just pre-built, read-only files.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="how">
+    <h2 id="how">How it works</h2>
+    <p>A deterministic eight-stage pipeline with a bounded repair loop: ingestion → analysis → tool design (with mandatory citations) → deterministic generation → hardening (12 static and 8 live checks in a restricted container) → evaluation → human review for sensitive tools (HITL) → certification. A score of 85+ with zero critical findings grants an "Agent-Ready Verified" certificate, signed with Ed25519 and bound to the SHA-256 fingerprint of the generated artifacts.</p>
+    <figure>
+      <img src="../../docs/architecture/diagrams/svg/03-openapi-pipeline.svg" alt="Diagram of the OpenAPI-to-certification pipeline with its eight stages and repair loop" loading="lazy">
+      <figcaption>AB-DIAG-03 — OpenAPI to certification pipeline. <a href="https://github.com/D0shi-Eng/AgentBridge/tree/main/docs/architecture/diagrams">All 14 diagrams in the repository</a>.</figcaption>
+    </figure>
+  </section>
+
+  <section aria-labelledby="arch">
+    <h2 id="arch">Architecture in brief</h2>
+    <div class="card">
+      <p>A modular monolith with hexagonal boundaries: <code>packages/</code> are units behind ports with swappable adapters, extractable into services later; <code>apps/</code> assemble them. The dependency rule is iron: the domain never depends on infrastructure, and deterministic-first — algorithms before model calls, with every LLM output passing Zod validation plus the truth layers.</p>
+      <figure>
+        <img src="../../docs/architecture/diagrams/svg/01-system-context.svg" alt="System context diagram: browser, API, tenant, and trust boundaries" loading="lazy">
+        <figcaption>AB-DIAG-01 — System context and trust boundaries.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section aria-labelledby="security">
+    <h2 id="security">Security and its limits, plainly</h2>
+    <div class="card">
+      <ul class="checks">
+        <li>Platform secrets come from the environment only, Zod-validated at boot; logs redact key-like patterns.</li>
+        <li>Tenant keys stored as scrypt hashes; upstream credentials as AES-256-GCM envelopes.</li>
+        <li>Live checks run in a container with a read-only root filesystem, a non-root user, and a localhost-confined network.</li>
+        <li>Structural tenant isolation with row-level security and a restricted database role.</li>
+        <li>Signed certificate plus a public verification endpoint behind a strict field whitelist.</li>
+      </ul>
+      <p class="warnbox"><strong>Limits:</strong> the certificate documents one policy run, not absolute safety; the sandbox depends on your Docker host configuration; the general network-egress policy and external KMS are not implemented; and no production deployment of this system exists.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="selfhost">
+    <h2 id="selfhost">Self-host in two minutes (no keys)</h2>
+    <div class="card">
+      <h3>CLI — the fastest way to try it</h3>
+      <pre><code># requires Node.js ≥ 20 and pnpm
+pnpm install
+pnpm exec tsx apps/cli/src/main.ts \
+  --spec tests/fixtures/mini-petstore.yaml --out ./ab-out</code></pre>
+      <p>Stage events print to the terminal, and <code>./ab-out</code> contains the generated MCP server + <code>certificate.json</code> + <code>badge.svg</code> + <code>events.ndjson</code>. Exit code 0 = certificate granted, 2 = documented rejection.</p>
+      <h3>The full platform (web service)</h3>
+      <pre><code>docker compose -f docker-compose.dev.yaml up -d   # PostgreSQL+pgvector and Redis
+pnpm --filter @agentbridge/infra exec prisma generate
+pnpm --filter @agentbridge/infra exec prisma migrate deploy      # on an empty database
+pnpm --filter @agentbridge/api start        # API on :3000
+pnpm --filter @agentbridge/dashboard dev    # dashboard on :3001</code></pre>
+      <p>Workspace and key creation runs through <code>agentbridge-ops onboard-tenant</code> (the raw key is written atomically to a file, never to logs). Full verified sequence and environment variables in the <a href="https://github.com/D0shi-Eng/AgentBridge#readme">repository README</a>.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="links">
+    <h2 id="links">Links</h2>
+    <div class="card">
+      <ul>
+        <li><a href="https://github.com/D0shi-Eng/AgentBridge">Source repository on GitHub</a></li>
+        <li><a href="https://github.com/D0shi-Eng/AgentBridge/tree/main/docs">Full documentation (English/Arabic)</a></li>
+        <li><a href="https://github.com/D0shi-Eng/AgentBridge/blob/main/SECURITY.md">Security policy and reporting</a></li>
+        <li><a href="https://github.com/D0shi-Eng/AgentBridge/blob/main/LICENSE">Apache-2.0 license</a></li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p>AgentBridge — an open-source project licensed under <a href="https://github.com/D0shi-Eng/AgentBridge/blob/main/LICENSE">Apache-2.0</a>. This static website is for introduction and documentation only; it is not the platform and hosts no service.</p>
+  </div>
+</footer>
+</body>
+</html>

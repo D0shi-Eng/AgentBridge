@@ -1,0 +1,26 @@
+# منع أسرار ومخرجات الجهاز من دخول سياق البناء، مع إبقاء manifests وlock وfixtures.
+**/.env
+**/.env.*
+**/*.pem
+**/*.key
+**/*.p12
+**/node_modules
+**/.next
+**/coverage
+**/.tmp
+**/*.log
+**/*.tsbuildinfo
+**/.git
+docs
+.codex
+.agents
+.local
+credentials.env
+credentials.env.*
+**/*.crt
+**/*.csr
+**/*.srl
+**/*.pfx
+tests/e2e/.tmp
+**/coverage
+**/logs

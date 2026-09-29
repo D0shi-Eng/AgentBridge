@@ -1,0 +1,41 @@
+openapi: 3.0.3
+info:
+  title: Construction Projects API (synthetic)
+  version: 1.4.0
+paths:
+  /sites:
+    get:
+      operationId: listSites
+      summary: Sites with oauth2 client-credentials security and cookie param
+      parameters:
+        - name: sessionTag
+          in: cookie
+          required: false
+          schema: { type: string }
+      responses:
+        "200":
+          description: site list
+security:
+  - oauthScopes: [sites:read]
+components:
+  securitySchemes:
+    oauthScopes:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.example-synthetic.test/oauth/token
+          scopes:
+            sites:read: Read construction sites
+    apiKeyHeader:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+  schemas:
+    Site:
+      type: object
+      properties:
+        id: { type: string }
+        city: { type: string }
+        budget:
+          type: number
+          description: Total budget of the site

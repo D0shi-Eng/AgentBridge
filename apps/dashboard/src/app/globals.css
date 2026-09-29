@@ -1,0 +1,5 @@
+/* نقطة تجميع الأنماط — الترتيب ملزم: توكنز ← أساس ← مكونات ← تسويق */
+@import "../theme/tokens.css";
+@import "../theme/base.css";
+@import "../theme/patterns.css";
+@import "../theme/marketing.css";

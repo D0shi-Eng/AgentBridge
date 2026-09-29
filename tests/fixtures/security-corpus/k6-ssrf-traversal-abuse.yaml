@@ -1,0 +1,25 @@
+openapi: 3.0.3
+info:
+  title: SSRF and Traversal Abuse (synthetic adversarial corpus)
+  version: 1.0.0
+servers:
+  - url: http://169.254.169.254/latest
+paths:
+  /../../etc/passwd:
+    get:
+      operationId: traversalPath
+      summary: Path traversal in the route itself
+      responses:
+        "200": { description: ok }
+  /fetch/{target}:
+    get:
+      operationId: fetchTarget
+      summary: Parameter smuggling into internal metadata
+      parameters:
+        - name: target
+          in: path
+          required: true
+          schema: { type: string }
+          description: try http://169.254.169.254/latest/meta-data as value
+      responses:
+        "200": { description: ok }

@@ -1,0 +1,57 @@
+{
+  "name": "sandbox-runner-seccomp",
+  "defaultAction": "SCMP_ACT_ALLOW",
+  "architectures": ["SCMP_ARCH_X86_64", "SCMP_ARCH_X86", "SCMP_ARCH_X32"],
+  "syscalls": [
+    {
+      "names": [
+        "mount",
+        "umount",
+        "umount2",
+        "pivot_root",
+        "chroot",
+        "kexec_load",
+        "kexec_file_load",
+        "init_module",
+        "finit_module",
+        "delete_module",
+        "keyctl",
+        "add_key",
+        "request_key",
+        "ptrace",
+        "process_vm_readv",
+        "process_vm_writev",
+        "open_by_handle_at",
+        "name_to_handle_at",
+        "reboot",
+        "swapon",
+        "swapoff",
+        "setns",
+        "unshare",
+        "lookup_dcookie",
+        "perf_event_open",
+        "bpf",
+        "nfsservctl",
+        "sysctl",
+        "acct",
+        "iopl",
+        "ioperm"
+      ],
+      "action": "SCMP_ACT_ERRNO",
+      "errnoRet": 1
+    },
+    {
+      "names": ["clone"],
+      "action": "SCMP_ACT_ERRNO",
+      "errnoRet": 1,
+      "args": [
+        {
+          "index": 0,
+          "value": 2114060288,
+          "valueTwo": 2114060288,
+          "op": "SCMP_CMP_MASKED_EQ"
+        }
+      ]
+    }
+  ]
+}

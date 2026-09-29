@@ -1,0 +1,34 @@
+openapi: 3.0.3
+info:
+  title: Multipart Upload Bounded Corpus (synthetic)
+  version: 1.0.0
+paths:
+  /documents:
+    post:
+      operationId: uploadDocument
+      summary: multipart/form-data upload
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file: { type: string, format: binary }
+                label: { type: string }
+      responses:
+        "201": { description: created }
+  /schools/{schoolId}/classes.csv:
+    get:
+      operationId: exportClasses
+      summary: non-json response content
+      parameters:
+        - name: schoolId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: csv export
+          content:
+            text/csv:
+              schema: { type: string }

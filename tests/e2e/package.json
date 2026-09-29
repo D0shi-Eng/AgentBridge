@@ -1,0 +1,28 @@
+{
+  "name": "@agentbridge/e2e",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@agentbridge/api": "workspace:*",
+    "@agentbridge/infra": "workspace:*",
+    "@agentbridge/llm": "workspace:*",
+    "@agentbridge/memory": "workspace:*",
+    "@agentbridge/orchestrator": "workspace:*",
+    "@agentbridge/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@prisma/client": "6.19.3",
+    "@types/node": "^22.10.0",
+    "axe-core": "^4.13.0",
+    "redis": "6.2.1",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  },
+  "license": "Apache-2.0"
+}

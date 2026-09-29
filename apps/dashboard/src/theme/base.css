@@ -1,0 +1,148 @@
+/**
+ * الأساس البصري المشترك — إعادة الضبط، الطبوع، النماذج، والأزرار.
+ * كل القيم من توكنز التصميم حصراً (theme/tokens.css).
+ *
+ * الخطوط: خطان مفتوحان محليان
+ * يضمّنهما next/font/local بلا جلب وقت تشغيل — IBM Plex Sans Arabic للعربية
+ * وInter للاتينية — مع سقوط آمن إلى خطوط النظام (Segoe UI يدعم العربية
+ * كاملاً على ويندوز). الترتيب يتقلب مع اتجاه المستند: العربية أولًا في RTL
+ * وInter أولًا في LTR؛ والمتغيران يضبطهما الجذر عبر src/fonts/fonts.ts.
+ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+/* كومة الخطوط على الجذر وترثها كل العناصر — الترتيب يتقلب مع الاتجاه:
+   العربية أولًا في RTL (Plex Sans Arabic) وInter أولًا في LTR.
+   المتغيران يضبطهما next/font على عنصر html (src/fonts/fonts.ts). */
+html {
+  font-family: var(--font-plex-arabic, "IBM Plex Sans Arabic"), var(--font-inter, "Inter"),
+    system-ui, "Segoe UI", Tahoma, "Helvetica Neue", Arial, "Noto Sans Arabic", sans-serif;
+}
+html[dir="ltr"] {
+  font-family: var(--font-inter, "Inter"), var(--font-plex-arabic, "IBM Plex Sans Arabic"),
+    system-ui, "Segoe UI", Tahoma, "Helvetica Neue", Arial, sans-serif;
+}
+/* عناصر النماذج لا ترث الخط افتراضيًا في أوراق أنماط المتصفح */
+button, input, select, textarea {
+  font-family: inherit;
+}
+
+/* خط أحادي المسافة للمحتوى التقني — عناوين code وUUIDs وهاشات */
+.mono, pre, code, kbd, samp {
+  font-family: ui-monospace, "Cascadia Mono", Consolas, "Courier New", monospace;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: var(--bg);
+  background-image: var(--bg-accent);
+  background-repeat: no-repeat;
+  color: var(--text);
+  min-height: 100vh;
+  font-size: var(--text-0);
+  line-height: 1.7; /* ارتفاع سطر أرحب للعربية — التشكيل لا يُقص */
+}
+
+h1 { font-size: clamp(var(--text-3), 5vw, var(--text-4)); line-height: 1.3; }
+h2 { font-size: var(--text-2); line-height: 1.35; }
+h3 { font-size: var(--text-1); line-height: 1.4; }
+
+a.link { color: var(--sky); text-decoration: none; transition: color var(--dur-fast) var(--ease); }
+a.link:hover { text-decoration: underline; }
+
+::selection { background: rgba(34, 197, 94, 0.35); }
+
+/* ===== حلقة التركيز الموحدة — كل العناصر التفاعلية بلا استثناء (WCAG 2.2) ===== */
+:focus-visible {
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ===== رابط التجاوز — أول عنصر بالتركيز بلوحة المفاتيح ويختبر بالماوس ===== */
+.skip-link {
+  position: absolute;
+  inset-inline-start: var(--space-2);
+  top: calc(-1 * var(--space-10));
+  z-index: calc(var(--z-dialog) + 1);
+  background: var(--brand-blue);
+  color: #fff;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--text--1);
+  font-weight: 700;
+  transition: top var(--dur-fast) var(--ease);
+}
+.skip-link:focus { top: var(--space-1); }
+
+/* ===== الحاويات ===== */
+.wrap { max-width: var(--container-text); margin: 0 auto; padding: var(--space-3) var(--space-25) var(--space-8); }
+.container-wide { max-width: var(--container-wide); margin: 0 auto; padding: 0 var(--space-25); }
+
+/* ===== الأزرار — نظام موحد بأربع نكهات وثلاثة أحجام =====
+   الحد الأدنى لارتفاع كل نكهات الأزرار 44px (هدف لمس ملزم
+   WCAG 2.5.8 بأشد صيغه) — الحجم sm يقلص الحشوة الأفقية لا الارتفاع */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-1);
+  border: none; cursor: pointer; font-weight: 700; font-size: var(--text--1);
+  min-height: 44px;
+  padding: 10px var(--space-25); border-radius: var(--radius-sm);
+  transition: filter var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease),
+    box-shadow var(--dur-fast) var(--ease);
+}
+.btn:hover:not(:disabled) { filter: brightness(1.12); transform: translateY(-1px); }
+.btn:active:not(:disabled) { transform: translateY(0); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
+.btn.primary { background: var(--brand-blue); color: #fff; }
+.btn.green { background: var(--brand-green); color: #052e12; box-shadow: var(--shadow-1); }
+.btn.red { background: transparent; color: var(--red); border: 1px solid rgba(248, 113, 113, 0.5); }
+.btn.ghost { background: transparent; border: 1px solid var(--border-strong); color: var(--text-secondary); }
+.btn.sm { padding: 6px var(--space-15); font-size: var(--text--2); min-height: 44px; border-radius: var(--radius-sm); }
+.btn.lg { padding: 13px var(--space-3); font-size: var(--text-0); border-radius: var(--radius-md); min-height: 48px; }
+
+/* ===== حقول الإدخال — ارتفاع لمس 44px للحقول القصيرة ===== */
+/* input[type="search"] مشمول صراحة: حقل بحث حلقة التعلّم كان بلا type فيفلت
+   من القاعدة ويظهر أبيض على الخلفية الداكنة. والقاعدة الأخيرة تشمل أي input
+   نصي بلا type تحصيناً مستقبلاً (checkbox/radio/range/file لأنواعها فعلية). */
+input[type="text"], input[type="password"], input[type="url"], input[type="search"],
+input:not([type]), textarea, select {
+  width: 100%; min-height: 44px; background: var(--inset); color: var(--text);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 10px var(--space-15); font-size: var(--text-0); outline: none;
+  transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+input:focus, textarea:focus, select:focus { border-color: var(--sky); box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15); }
+input::placeholder, textarea::placeholder { color: var(--muted); }
+textarea { min-height: 180px; font-size: var(--text--1); resize: vertical; }
+label.field { display: block; font-size: var(--text--1); color: var(--muted); margin-bottom: var(--space-15); }
+label.field span { display: block; margin-bottom: 6px; }
+
+.row { display: grid; grid-template-columns: 1fr auto auto; gap: var(--space-15); align-items: end; }
+.check { display: flex; align-items: center; gap: var(--space-1); font-size: var(--text--1); color: var(--text); cursor: pointer; user-select: none; }
+.check input { accent-color: var(--brand-green); width: 16px; height: 16px; }
+
+/* المحتوى التقني باتجاه LTR دائماً داخل نص عربي — bidi محصور (وثيقة 05) */
+.mono {
+  direction: ltr; unicode-bidi: embed;
+  font-size: var(--text--2); color: #bcd0ff; word-break: break-all;
+}
+
+.error-box {
+  background: var(--red-soft); border: 1px solid rgba(248, 113, 113, 0.35); color: var(--red);
+  border-radius: var(--radius-sm); padding: 10px var(--space-15); font-size: var(--text--1);
+  margin-bottom: var(--space-15);
+}
+.ok-note { color: var(--brand-green); font-size: var(--text--1); }
+
+/* ===== شارة المثال التوضيحي — صدق المنتج: البيانات الاصطناعية موسومة ظاهراً ===== */
+.demo-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(251, 191, 36, 0.12); border: 1px dashed rgba(251, 191, 36, 0.5);
+  color: var(--amber); border-radius: var(--radius-full);
+  padding: 3px 12px; font-size: var(--text--2); font-weight: 700;
+}

@@ -1,0 +1,29 @@
+%% AB-DIAG-11 — Sandbox: network, file, permission boundaries | Status: IMPLEMENTED
+%% الحاوية المقيدة تحد ملفاتها وصلاحياتها وشبكتها؛ assertLocalhostOnly يمنع أي خروج برمجياً
+flowchart TB
+  PROBES["live-probes.ts - HD-01 to HD-08"] --> GUARD["assertLocalhostOnly - blocks any non-localhost target"]
+  HOST["host machine - Docker engine"]
+  subgraph BOX["restricted container - sandbox.Dockerfile + docker-compose.sandbox.yaml"]
+    FS["read-only root filesystem - touch /etc/test fails"]
+    USER["non-root user 65532:65532 - whoami is not root"]
+    LIMITS["resource caps: 1 cpu, 512m memory, 64 pids"]
+    SECCOMP["seccomp default + no-new-privileges"]
+    GEN["generated server under test"]
+    MOCK["mock-upstream + mock-oidc-provider on localhost"]
+    FS ~~~ USER
+    USER ~~~ LIMITS
+    LIMITS ~~~ SECCOMP
+    SECCOMP ~~~ GEN
+    GEN ~~~ MOCK
+  end
+  HOST --- BOX
+  PROBES --> GEN
+  GUARD --> MOCK
+  GUARD -- "external network attempt" --> FAIL["violation: HARD_LIVE_PROBES_FAILED - run rejected"]
+  EGRESS["general network egress policy"]:::planned -. "PLANNED - beyond JWKS allowlist, not implemented" .-> GUARD
+  classDef impl fill:#e8f5e9,stroke:#2e7d32
+  classDef fail fill:#ffebee,stroke:#b71c1c
+  classDef planned fill:#fafafa,stroke:#9e9e9e,stroke-dasharray: 5 5
+  class FS,USER,LIMITS,SECCOMP,GEN,MOCK,PROBES,GUARD impl
+  class FAIL fail
+  class EGRESS planned

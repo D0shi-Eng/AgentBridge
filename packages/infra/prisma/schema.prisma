@@ -1,0 +1,302 @@
+// مخطط البيانات: مفاتيح مركبة tenant-aware وهوية وجلسات قابلة للإلغاء.
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [vector]
+}
+
+model Tenant {
+  id String @id
+  name String
+  api_key_hash String
+  is_admin Boolean @default(false)
+  created_at DateTime @default(now())
+  /// FC — قبر المستأجر: يمنع أي وصول أو إعادة استخدام للمعرف بعد الحذف
+  deleted_at DateTime?
+  /// FC — حجز قانوني نافذ حتى هذا التوقيت: يمنع سير الحذف كلياً
+  legal_hold_until DateTime?
+  projects Project[]
+  specs Spec[]
+  pipelines Pipeline[]
+  memberships Membership[]
+  api_credentials ApiCredential[]
+  sessions Session[]
+  login_transactions LoginTransaction[]
+  sso_config SsoConfig?
+  @@map("tenants")
+}
+
+model ExternalIdentity {
+  id String @id
+  issuer String
+  subject String
+  created_at DateTime @default(now())
+  memberships Membership[]
+  sessions Session[]
+  @@unique([issuer, subject])
+  @@map("external_identities")
+}
+
+model Membership {
+  id String @id
+  identity_id String
+  tenant_id String
+  role String
+  status String @default("active")
+  authorization_version Int @default(1)
+  identity ExternalIdentity @relation(fields: [identity_id], references: [id])
+  tenant Tenant @relation(fields: [tenant_id], references: [id])
+  sessions Session[]
+  @@unique([identity_id, tenant_id])
+  @@unique([tenant_id, id])
+  @@index([tenant_id, status])
+  @@map("memberships")
+}
+
+model ApiCredential {
+  id String @id
+  tenant_id String
+  subject_id String
+  key_hash String
+  permissions Json
+  authorization_version Int @default(1)
+  revoked_at DateTime?
+  /// FC — صلاحية اختيارية: منقضٍ = مصادقة مرفوضة fail-closed
+  expires_at DateTime?
+  tenant Tenant @relation(fields: [tenant_id], references: [id])
+  @@unique([tenant_id, id])
+  @@index([tenant_id, revoked_at])
+  @@map("api_credentials")
+}
+
+model Session {
+  id String @id
+  token_hash String @unique
+  csrf_hash String
+  browser_binding_hash String
+  identity_id String
+  membership_id String
+  tenant_id String
+  auth_method String
+  permissions Json
+  authorization_version Int
+  idle_expires_at DateTime
+  absolute_expires_at DateTime
+  revoked_at DateTime?
+  identity ExternalIdentity @relation(fields: [identity_id], references: [id])
+  membership Membership @relation(fields: [tenant_id, membership_id], references: [tenant_id, id])
+  tenant Tenant @relation(fields: [tenant_id], references: [id])
+  @@index([tenant_id, revoked_at])
+  @@map("sessions")
+}
+
+model LoginTransaction {
+  id String @id
+  state_hash String @unique
+  browser_binding_hash String
+  tenant_id String
+  config_version Int
+  config_instance_id String
+  nonce String
+  verifier_envelope String
+  redirect_uri String
+  return_path String
+  expires_at DateTime
+  consumed_at DateTime?
+  tenant Tenant @relation(fields: [tenant_id], references: [id])
+  @@index([tenant_id, expires_at])
+  @@map("login_transactions")
+}
+
+model SsoConfig {
+  tenant_id String @id
+  provider String
+  issuer String
+  client_id String
+  jwks_url String
+  authorization_endpoint String?
+  token_endpoint String?
+  scopes String @default("[\"openid\"]")
+  client_secret_envelope String?
+  config_version Int @default(1)
+  config_instance_id String
+  enabled Boolean @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  tenant Tenant @relation(fields: [tenant_id], references: [id])
+  @@map("sso_configs")
+}
+
+model Project {
+  id String @id
+  tenant_id String
+  name String
+  created_at DateTime @default(now())
+  tenant Tenant @relation(fields: [tenant_id], references: [id])
+  specs Spec[]
+  pipelines Pipeline[]
+  @@unique([tenant_id, id])
+  @@index([tenant_id])
+  @@map("projects")
+}
+
+model Spec {
+  id String @id
+  tenant_id String
+  project_id String
+  content String
+  created_at DateTime @default(now())
+  tenant Tenant @relation(fields: [tenant_id], references: [id])
+  project Project @relation(fields: [tenant_id, project_id], references: [tenant_id, id])
+  pipelines Pipeline[]
+  @@unique([tenant_id, id])
+  @@index([tenant_id, project_id])
+  @@map("specs")
+}
+
+model Pipeline {
+  id String @id
+  tenant_id String
+  project_id String
+  spec_id String
+  status String
+  stopped_at String?
+  repair_cycles_used Int @default(0)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  tenant Tenant @relation(fields: [tenant_id], references: [id])
+  project Project @relation(fields: [tenant_id, project_id], references: [tenant_id, id])
+  spec Spec @relation(fields: [tenant_id, spec_id], references: [tenant_id, id])
+  certificates Certificate[]
+  artifacts Artifact[]
+  @@unique([tenant_id, id])
+  @@index([tenant_id, status])
+  @@map("pipelines")
+}
+
+model Certificate {
+  run_id String
+  tenant_id String
+  final_score Int
+  granted Boolean
+  verification_id String @unique
+  certificate_json String
+  issued_at DateTime
+  pipeline Pipeline @relation(fields: [tenant_id, run_id], references: [tenant_id, id])
+  @@id([tenant_id, run_id])
+  @@map("certificates")
+}
+
+/// إبطال الشهادات: قرار حتمي يقيد رقم التحقق عالمياً عبر
+/// /verify. الصف غير قابل للتعديل أو الحذف (INSERT/SELECT فقط) — الإبطال
+/// نهائي، وسياسة exact_lookup تتيح قراءته في المسار العام بلا كشف مستأجر.
+/// FC — العلاقة مع pipelines مفكوكة عمداً (أعمدة tenant_id/run_id نصية
+/// حصراً) كي يبقى صف الإبطال قائماً بعد مسح بيانات المستأجر التشغيلية —
+/// تحقق الشهادة المنشورة يعتمد عليه بعد موت المستأجر نفسه.
+model CertificateRevocation {
+  id String @default(uuid())
+  tenant_id String
+  run_id String
+  verification_id String @unique
+  reason String
+  revoked_at DateTime @default(now())
+  @@id([id])
+  @@index([tenant_id])
+  @@map("certificate_revocations")
+}
+
+model Artifact {
+  run_id String
+  tenant_id String
+  artifact_json String
+  created_at DateTime @default(now())
+  pipeline Pipeline @relation(fields: [tenant_id, run_id], references: [tenant_id, id])
+  @@id([tenant_id, run_id])
+  @@map("artifacts")
+}
+
+model LlmSpend {
+  tenant_id String
+  month String
+  amount_usd Float @default(0)
+  @@id([tenant_id, month])
+  @@map("llm_spend")
+}
+
+/// أرشيف snapshot التشغيل الدائم: مرجع الاستئناف بعد TTL الـL1
+model RunStateArchive {
+  tenant_id String
+  run_id String
+  snapshot_json String
+  generation Int
+  fence BigInt
+  archived_at DateTime @default(now())
+  @@id([tenant_id, run_id])
+  @@index([tenant_id])
+  @@map("run_state_archives")
+}
+
+model MemoryEmbedding {
+  id String
+  tenant_id String
+  run_id String
+  chunk String
+  embedding Unsupported("vector(1536)")
+  created_at DateTime @default(now())
+  @@id([tenant_id, run_id, id])
+  @@index([tenant_id, run_id])
+  @@map("memory_embeddings")
+}
+
+model FlywheelLesson {
+  id String
+  tenant_id String
+  spec_pattern String
+  design_decision String
+  outcome String
+  score Int
+  lesson_json String
+  created_at DateTime @default(now())
+  @@id([tenant_id, id])
+  @@index([tenant_id])
+  @@map("flywheel_lessons")
+}
+
+model AuditLog {
+  seq Int
+  tenant_id String
+  run_id String
+  stage String
+  decision String
+  abstracted_payload String
+  at DateTime
+  prev_hash String
+  hash String @id
+  @@unique([tenant_id, seq])
+  @@index([tenant_id, run_id])
+  @@map("audit_log")
+}
+
+/// سجل عمليات حذف المستأجر الدائم: السياج الفعلي.
+/// فهرس فريد جزئي (tenant_id حيث status='in_progress') في SQL الهجرة
+/// يمنع عمليتين متوازيتين داخل القاعدة؛ النسيج يُخزن مُهشَّماً حصراً،
+/// والإيصال يُخزن لإعادة الإرسال الإيدبوتنتية بلا وصل مكرر. الاستئناف
+/// من stage المسجلة بعد أي فشل.
+model TenantDeletionOperation {
+  id String @id
+  tenant_id String
+  fence_hash String
+  status String
+  stage String
+  receipt_json String?
+  started_at DateTime @default(now())
+  completed_at DateTime?
+  version Int @default(1)
+  @@index([tenant_id, status])
+  @@map("tenant_deletion_operations")
+}

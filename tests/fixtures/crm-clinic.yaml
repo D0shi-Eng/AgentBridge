@@ -1,0 +1,296 @@
+# مواصفة واقعية 1 — نظام CRM لعيادات
+# غرضها: إثبات الخط على بيانات صحية حساسة فعلًا: PII غني، منطقة admin حساسة،
+# ومرشحات رديئة (بنية تشغيلية وعملية غير موثقة) يجب أن تستبعدها المنصة تلقائيًا.
+openapi: "3.0.3"
+info:
+  title: "HealWell Clinic CRM"
+  version: "2.4.0"
+  description: "إدارة المرضى والمواعيد والوصفات وفواتير شبكة عيادات."
+security:
+  - bearerAuth: []
+paths:
+  /patients:
+    get:
+      operationId: listPatients
+      summary: "List patients with paging and free-text search across records"
+      parameters:
+        - { name: page, in: query, schema: { type: integer } }
+        - { name: pageSize, in: query, schema: { type: integer } }
+        - { name: search, in: query, description: "Matches name, phone or national id", schema: { type: string } }
+      responses:
+        "200": { description: "Paged patient list" }
+    post:
+      operationId: registerPatient
+      summary: "Register a new patient profile with identity and contact details"
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/NewPatient" }
+      responses:
+        "201": { description: "Patient created" }
+  /patients/{patientId}:
+    parameters:
+      - { name: patientId, in: path, required: true, schema: { type: string } }
+    get:
+      operationId: fetchPatientProfile
+      summary: "Fetch one patient profile including insurance and allergy notes"
+      responses:
+        "200": { description: "Patient profile" }
+    put:
+      operationId: updatePatientRecord
+      summary: "Update editable patient fields such as contact or insurance data"
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PatientPatch" }
+      responses:
+        "200": { description: "Updated patient" }
+    delete:
+      operationId: removePatientRecord
+      summary: "Erase a patient record honoring right-to-be-forgotten requests"
+      responses:
+        "204": { description: "Erased" }
+  /patients/{patientId}/medical-history:
+    parameters:
+      - { name: patientId, in: path, required: true, schema: { type: string } }
+    get:
+      operationId: listMedicalHistory
+      summary: "List chronic conditions, allergies and past diagnoses entries"
+      responses:
+        "200": { description: "History entries" }
+    post:
+      operationId: addHistoryEntry
+      summary: "Append a clinical history entry written by an authorized physician"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [diagnosis, icd10Code, notedAt]
+              properties:
+                diagnosis: { type: string }
+                icd10Code: { type: string }
+                notedAt: { type: string }
+                notes: { type: string }
+      responses:
+        "201": { description: "Entry appended" }
+  /patients/{patientId}/insurance:
+    parameters:
+      - { name: patientId, in: path, required: true, schema: { type: string } }
+    get:
+      operationId: fetchInsuranceCoverage
+      summary: "Fetch current insurer, policy number and coverage validity window"
+      responses:
+        "200": { description: "Coverage details" }
+    put:
+      operationId: replaceInsurancePolicy
+      summary: "Replace the stored insurance policy after renewal or carrier change"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [carrierName, policyNumber, validUntil]
+              properties:
+                carrierName: { type: string }
+                policyNumber: { type: string }
+                validUntil: { type: string }
+      responses:
+        "200": { description: "Policy replaced" }
+  /appointments:
+    get:
+      operationId: listAppointments
+      summary: "List appointments inside a time window filtered by status"
+      parameters:
+        - { name: fromDate, in: query, schema: { type: string } }
+        - { name: toDate, in: query, schema: { type: string } }
+        - { name: statusFilter, in: query, schema: { type: string, enum: [booked, done, cancelled] } }
+        - { name: clinicianId, in: query, schema: { type: string } }
+      responses:
+        "200": { description: "Appointment list" }
+    post:
+      operationId: bookAppointment
+      summary: "Book a new appointment slot between patient and clinician"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [patientId, clinicianId, scheduledAt, visitReason]
+              properties:
+                patientId: { type: string }
+                clinicianId: { type: string }
+                scheduledAt: { type: string }
+                visitReason: { type: string }
+      responses:
+        "201": { description: "Booked" }
+  /appointments/{appointmentId}:
+    parameters:
+      - { name: appointmentId, in: path, required: true, schema: { type: string } }
+    get:
+      operationId: fetchAppointmentDetails
+      summary: "Fetch one appointment with its clinic branch and visit status"
+      responses:
+        "200": { description: "Appointment details" }
+    patch:
+      operationId: rescheduleAppointment
+      summary: "Move an appointment to another slot keeping its visit reason"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [newSlot]
+              properties:
+                newSlot: { type: string }
+                rescheduleNote: { type: string }
+      responses:
+        "200": { description: "Rescheduled" }
+    delete:
+      operationId: cancelAppointment
+      summary: "Cancel a booked appointment releasing the reserved clinic slot"
+      responses:
+        "204": { description: "Cancelled" }
+  /clinicians:
+    get:
+      operationId: listClinicians
+      summary: "List practicing clinicians filtered by branch and specialization"
+      parameters:
+        - { name: branchId, in: query, schema: { type: string } }
+        - { name: specialty, in: query, schema: { type: string } }
+      responses:
+        "200": { description: "Clinician list" }
+  /prescriptions:
+    post:
+      operationId: issuePrescription
+      summary: "Issue a drug prescription tied to a patient and clinic visit"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [patientId, drugCode, dosagePlan]
+              properties:
+                patientId: { type: string }
+                drugCode: { type: string }
+                dosagePlan: { type: string }
+                refillCount: { type: integer }
+      responses:
+        "201": { description: "Prescription issued" }
+    get:
+      operationId: listPrescriptions
+      summary: "List issued prescriptions for audit or pharmacy pickup flows"
+      parameters:
+        - { name: patientId, in: query, schema: { type: string } }
+        - { name: issuedAfter, in: query, schema: { type: string } }
+      responses:
+        "200": { description: "Prescription list" }
+  /invoices:
+    get:
+      operationId: listInvoices
+      summary: "List billing invoices filtered by payment status and patient"
+      parameters:
+        - { name: patientId, in: query, schema: { type: string } }
+        - { name: paymentState, in: query, schema: { type: string, enum: [open, paid, overdue] } }
+      responses:
+        "200": { description: "Invoice list" }
+    post:
+      operationId: createInvoice
+      summary: "Create a billing invoice for consultations and lab services"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [patientId, serviceLines, dueDate]
+              properties:
+                patientId: { type: string }
+                serviceLines: { type: array, items: { type: string } }
+                dueDate: { type: string }
+      responses:
+        "201": { description: "Invoice created" }
+  /invoices/{invoiceId}/payments:
+    parameters:
+      - { name: invoiceId, in: path, required: true, schema: { type: string } }
+    post:
+      operationId: recordInvoicePayment
+      summary: "Record a settled payment amount against an open invoice"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amountPaid, method]
+              properties:
+                amountPaid: { type: number }
+                method: { type: string, enum: [card, cash, transfer] }
+                receiptRef: { type: string }
+      responses:
+        "201": { description: "Payment recorded" }
+  /admin/users:
+    get:
+      operationId: listStaffAccounts
+      summary: "Back-office listing of staff accounts with their granted roles"
+      responses:
+        "200": { description: "Staff accounts" }
+    post:
+      operationId: createStaffAccount
+      summary: "Back-office creation of a staff account bound to one clinic branch"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [workEmail, assignedRole, branchId]
+              properties:
+                workEmail: { type: string }
+                assignedRole: { type: string, enum: [reception, nurse, physician, manager] }
+                branchId: { type: string }
+      responses:
+        "201": { description: "Staff account created" }
+  /admin/sessions/{sessionId}:
+    delete:
+      operationId: revokeStaffSession
+      summary: "Back-office revocation of a staff session after offboarding events"
+      parameters:
+        - { name: sessionId, in: path, required: true, schema: { type: string } }
+      responses:
+        "204": { description: "Session revoked" }
+  /reports/legacy-export:
+    get:
+      operationId: runLegacyExportJob
+      responses:
+        "202": { description: "Export started" }
+  /health:
+    get:
+      operationId: getServiceHeartbeat
+      summary: "Liveness probe used by cluster infrastructure only"
+      security: []
+      responses:
+        "200": { description: "Alive" }
+components:
+  # bearerAuth كان مُشاراً إليه دون تعريف — أُضيف التعريف الصحيح
+  # ليبقى العينة المرجعية موصّفة تماماً ضمن الأنواع المدعومة (http bearer).
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    NewPatient:
+      type: object
+      required: [fullName, nationalId, birthDate, primaryPhone]
+      properties:
+        fullName: { type: string }
+        nationalId: { type: string }
+        birthDate: { type: string }
+        primaryPhone: { type: string }
+        contactEmail: { type: string }
+        bloodType: { type: string }
+        knownAllergies: { type: array, items: { type: string } }
+    PatientPatch:
+      type: object
+      properties:
+        primaryPhone: { type: string }
+        contactEmail: { type: string }
+        preferredBranch: { type: string }

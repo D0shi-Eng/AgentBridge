@@ -1,0 +1,14 @@
+%% AB-DIAG-10 — Audit chain, anchor, tamper detection | Status: IMPLEMENTED
+%% hash_n = sha256(hash_n-1 + event_n) بسلسلة لكل مستأجر؛ أي عبث يكسر السلسلة في موضع دقيق
+flowchart TB
+  EVT["pipeline event or gate decision"] --> REDACT["abstracted payload - redact filter strips key-like patterns and PII"]
+  REDACT --> ENTRY["AuditTrailEntry: seq, tenantId, runId, stage, decision, at, prevHash"]
+  GEN["GENESIS anchor - first hash of the tenant chain"] --> ENTRY
+  ENTRY --> HASH["hash_n = SHA-256 of hash_n-1 + event_n"]
+  HASH --> STORE["append-only storage in L2 - per-tenant write queue, no races"]
+  STORE --> VERIFYC["verifyChain tenantId - rebuilds the full chain, first mismatch reported at exact position"]
+  TAMPER["direct DB edit attempt"] -. "chain break detected at position n" .-> VERIFYC
+  classDef impl fill:#e8f5e9,stroke:#2e7d32
+  classDef guard fill:#fff3e0,stroke:#b26a00
+  class EVT,REDACT,ENTRY,GEN,HASH,STORE,VERIFYC impl
+  class TAMPER guard

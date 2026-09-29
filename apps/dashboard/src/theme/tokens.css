@@ -1,0 +1,123 @@
+/**
+ * توكنز التصميم الموحدة — المصدر الوحيد لقيم الهوية البصرية في المنصة.
+ *
+ * القواعد:
+ *   - أخضر الثقة #22c55e لون القرار والنجاح، والأزرق العميق لون الإجراء والعمق.
+ *   - مقياس الطبوط هندسي 1.25 انطلاقاً من 14px، مع clamp للعناوين الكبيرة.
+ *   - المسافات على شبكة 8px (مع نصف خطوة 4px للحالات الضيقة).
+ *   - ثلاثة مستويات ظل فقط، وأنصاف أقطار محصورة.
+ *   - الخطوط: كومة نظام محلية فقط (بلا جلب خطوط وقت التشغيل) — انظر base.css.
+ *   - نقاط الانكسار المعتمدة: 360 / 390 / 768 / 1024 / 1280 / 1440 (وثيقة 06).
+ * أي قيمة جديدة تُضاف هنا حصراً — لا قيم صريحة داخل المكونات.
+ */
+
+:root {
+  /* ===== ألوان العلامة ===== */
+  --brand-green: #22c55e;          /* أخضر الثقة — النجاح والقرارات الممنوحة */
+  --brand-green-strong: #16a34a;
+  --brand-green-deep: #14532d;
+  --brand-green-soft: rgba(34, 197, 94, 0.13);
+  --brand-blue: #1d4ed8;           /* الأزرق العميق — الإجراءات الأساسية */
+  --brand-blue-strong: #1e40af;
+  --brand-blue-soft: rgba(59, 130, 246, 0.14);
+  --sky: #38bdf8;                  /* لمسة معلوماتية باردة */
+  --amber: #fbbf24;
+  --red: #f87171;
+  --red-soft: rgba(248, 113, 113, 0.12);
+  --green-soft: var(--brand-green-soft);
+
+  /* ===== ألوان المخططات (تحليلات) — لا يُعتمد على اللون وحده، الأرقام ظاهرة دائماً ===== */
+  --chart-1: var(--brand-green);
+  --chart-2: #60a5fa;
+  --chart-3: var(--sky);
+  --chart-grid: rgba(170, 182, 218, 0.14);
+
+  /* ===== الأسطح (الوضع الداكن — قرار الهوية الوحيد، انظر تقرير 03) ===== */
+  --bg: #070b18;                   /* خلفية الجذر أعمق من سابقتها لبروز البطاقات */
+  --bg-accent: radial-gradient(1100px 500px at 85% -10%, rgba(34, 197, 94, 0.09), transparent 60%),
+    radial-gradient(900px 480px at 8% 0%, rgba(29, 78, 216, 0.16), transparent 55%);
+  --card: #101830;
+  --card-raised: #16203d;
+  --inset: #0b1226;                /* حقول الإدخال والمقاطع الغائرة */
+  --border: #23305a;
+  --border-strong: #33437c;
+  --text: #eef2fc;
+  --text-secondary: #b8c3e4;       /* رُفع تباينها (كانت #aab6da) */
+  /* درجة باهت مرفوعة لتجاوز 4.5:1 على سطح البطاقة (WCAG 1.4.3 — نتيجة axeserious) */
+  --muted: #94a2c8;
+  /* جسم النص التسويقي — عربي مقروء 17.5px مع ارتفاع سطر ≥ 1.75 */
+  --text-body: 17.5px;
+
+  /* ===== مقياس الطبوط 1.25 (أساس 14px) ===== */
+  --text--2: 11.2px;
+  --text--1: 12.6px;
+  --text-0: 14px;
+  --text-1: 17.5px;
+  --text-2: 21.9px;
+  --text-3: 27.3px;
+  --text-4: 34.2px;
+  --text-5: 42.7px;
+
+  /* ===== شبكة 8px ===== */
+  --space-05: 4px;
+  --space-1: 8px;
+  --space-15: 12px;
+  --space-2: 16px;
+  --space-25: 20px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 40px;
+  --space-6: 48px;
+  --space-8: 64px;
+  --space-10: 80px;
+
+  /* ===== أنصاف الأقطار ===== */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 999px;
+
+  /* ===== الظلال الثلاثة ===== */
+  --shadow-1: 0 1px 2px rgba(2, 6, 23, 0.5), 0 2px 8px rgba(2, 6, 23, 0.35);
+  --shadow-2: 0 4px 14px rgba(2, 6, 23, 0.45), 0 10px 28px rgba(2, 6, 23, 0.35);
+  --shadow-3: 0 10px 40px rgba(2, 6, 23, 0.55), 0 22px 60px rgba(34, 197, 94, 0.08);
+
+  /* ===== حلقة التركيز الموحدة (WCAG 2.2 — مؤشر تركيز ظاهر دائماً) ===== */
+  --focus-ring-color: var(--sky);
+  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--focus-ring-color);
+
+  /* ===== الحركة الهادئة (150–250ms) ===== */
+  --dur-fast: 150ms;
+  --dur-base: 200ms;
+  --dur-slow: 250ms;
+  --ease: cubic-bezier(0.33, 1, 0.68, 1);
+
+  /* ===== طبقات التراكب ===== */
+  --z-sticky: 40;                  /* ترويسة الموقع/التنقل */
+  --z-toast: 60;                   /* التنبيهات فوق كل شيء عدا الحوارات */
+  --z-dialog: 70;
+
+  /* ===== الحاويات ===== */
+  --container-text: 1080px;
+  --container-wide: 1160px;
+
+  /* ===== أحجام الأيقونات ===== */
+  --icon-sm: 16px;
+  --icon-md: 24px;
+  --icon-lg: 32px;
+
+  /* ===== كثافة الجداول ===== */
+  --table-pad-y: 9px;
+  --table-pad-x: 10px;
+}
+
+/* ===== احترام dir في الأنماط — لا margin-left ثابت إطلاقاً
+   كل هوامش/حشوات أفقية بخصائص منطقية: margin-inline, padding-inline,
+   inset-inline-start, border-inline-start, text-align start/end.
+   dir="rtl"/"ltr" على الجذر يقلبها تلقائياً بلا كود إضافي. */
+html[dir="rtl"] { direction: rtl; }
+html[dir="ltr"] { direction: ltr; }
+/* أدوات منطقية بديلة — تُستخدم في المكونات بدل الثوابت الفيزيائية */
+.logical-start { margin-inline-start: var(--space-1); }
+.logical-end { margin-inline-end: var(--space-1); }

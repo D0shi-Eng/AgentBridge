@@ -1,0 +1,61 @@
+# ===== تبعيات ومخرجات البناء =====
+node_modules/
+dist/
+.next/
+.next-isolated1/
+.next-isolated2/
+*.tsbuildinfo
+
+# ===== البيئة والأسرار — ممنوع رفعها أبداً =====
+.env
+.env.*
+!.env.example
+credentials.env
+credentials.env.*
+
+# ===== مفاتيح وشهادات خاصة بأي صيغة — لا استثناءات ولو كانت اختبارية =====
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+*.csr
+*.srl
+
+# ===== سجلات ومخرجات الفحوص والمؤقتات =====
+logs/
+*.log
+coverage/
+.vitest-cache/
+.tmp/
+tests/e2e/.tmp/
+*.zip.tmp
+sbom.cdx.json
+
+# ===== أرشيفات مولدة لا تُتتبع =====
+*.zip
+*.tgz
+
+# ===== أدوات التطوير =====
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# إعداد محلي لمولّد الرسومات (مسار متصفح خاص بالجهاز) — بيئة CI تولّد ما يخصها
+docs/architecture/diagrams/puppeteer-config.json
+
+# نسخة بناء الموقع الثابت المحلية — لا تدخل المستودع
+website/dist/
+
+# سياق بناء صورة عدّاء الصندوق — مخرجات بناء محلية
+/docker/sandbox-runner/*-package.json
+/docker/sandbox-runner/*-dist/
+
+# مخرجات تجربة CLI المحلية
+ab-out/
+ab-out-live/
+
+# ===== موقع التثبيت المحلي (بيانات/أسرار/سجلات/نسخ احتياطية لكل جهاز) =====
+runtime/

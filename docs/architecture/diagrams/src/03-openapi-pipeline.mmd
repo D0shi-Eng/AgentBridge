@@ -1,0 +1,23 @@
+%% AB-DIAG-03 — OpenAPI path: ingestion to certification | Status: IMPLEMENTED
+%% كل مرحلة عقدة DAG حتمية؛ الإصلاح محصور بحد 3 دورات ثم تصعيد بشري
+flowchart TB
+  IN(["OpenAPI 3.x spec - YAML/JSON, max 512KB"]) --> LOAD["load_spec - spec-parser"]
+  LOAD --> NORM["normalize - refs, alias-bomb guard"]
+  NORM --> ANA["analyze - classify, PII, risk, worthiness"]
+  ANA --> DES["design_tools - DesignerAgent + citations"]
+  DES --> GENV["generate_server - deterministic codegen"]
+  GENV --> HARD["harden - HB-01..13 static + HD-01..08 live"]
+  HARD --> EVALN["evaluate - EvaluatorAgent + citation-verifier"]
+  EVALN --> HITL{"HITL required?"}
+  HITL -- "yes - sensitive tools" --> WAIT["suspend - human approval gate"]
+  WAIT -- "approved" --> CERT
+  HITL -- "no" --> CERT["certify - score >= 85 and zero critical"]
+  CERT --> OUT(["Certificate + badge + ZIP + AB verification id"])
+  HARD -- "findings" --> REP["repair - RepairerAgent, max 3 rounds"]
+  EVALN -- "invalid citations" --> REP
+  REP --> DES
+  REP -. "rounds exhausted" .-> HUMAN["needs_human - escalate"]
+  classDef impl fill:#e8f5e9,stroke:#2e7d32
+  classDef gate fill:#fff3e0,stroke:#b26a00
+  class LOAD,NORM,ANA,DES,GENV,HARD,EVALN,CERT,REP impl
+  class HITL,WAIT,HUMAN gate

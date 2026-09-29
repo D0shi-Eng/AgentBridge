@@ -1,0 +1,7 @@
+{
+  "tools": [
+    { "name": "echo_error_leaky", "description": "Echo with error leak" },
+    { "name": "list_pets_injected", "description": "List pets with injection" },
+    { "name": "read_pet_unsafe", "description": "Read pet unsafe" }
+  ]
+}

@@ -1,0 +1,53 @@
+%% AB-DIAG-14 — الموقع الثابت مقابل المنصة الكاملة (Static website vs. full platform)
+%% عربي/إنجليزي: كل عقدة تحمل الاسمين. الأحمر = ممنوع، الرمادي المتقطع = غير منفذ
+flowchart LR
+  subgraph VISITOR["زائر الموقع / Website Visitor"]
+    BROWSER["متصفح الزائر<br/>Visitor browser"]
+  end
+
+  subgraph SITE["الموقع الثابت website/ — قراءة فقط / Static site — read-only"]
+    PAGES["صفحات HTML/CSS/SVG جاهزة<br/>Pre-built HTML/CSS/SVG pages<br/>تعريف + توثيق + رسومات<br/>About + docs + diagrams"]
+    NOBACKEND["بلا خادم ولا أسرار ولا نماذج<br/>No server runtime, secrets, or forms"]
+    PAGES -.->|"لا يمكن / cannot"| NOBACKEND
+  end
+
+  subgraph SELFHOST["المنصة الكاملة ذاتية الاستضافة / Full self-hosted platform"]
+    DASH["لوحة Next.js<br/>Next.js dashboard"]
+    API["خادم Fastify API<br/>Fastify API server"]
+    AUTH["مصادقة وجلسات<br/>Auth and sessions"]
+    PIPE["مسار المعالجة OpenAPI→MCP<br/>OpenAPI to MCP pipeline"]
+    CERT["شهادة موقعة + تحقق علني<br/>Signed certificate + public verify"]
+    subgraph STORES["مخازن / Data stores"]
+      PG[("PostgreSQL + pgvector")]
+      REDIS[("Redis")]
+    end
+    SANDBOX["صندوق Docker مقيد<br/>Restricted Docker sandbox"]
+  end
+
+  UPSTREAM["واجهة المستأجر العلوية<br/>Tenant upstream API"]
+
+  BROWSER -->|"HTTP قراءة فقط / read-only"| PAGES
+  BROWSER -->|"تسجيل دخول واستخدام موثق<br/>authenticated use"| DASH
+  DASH -->|"وكيل نفس الأصل / same-origin proxy"| API
+  API --> AUTH
+  API --> PIPE
+  PIPE --> SANDBOX
+  PIPE --> CERT
+  API --> PG
+  API --> REDIS
+  SANDBOX -->|"localhost فقط / localhost only"| UPSTREAM
+  CERT -.->|"KMS خارجي غير منفذ / external KMS not implemented"| KMS["KMS خارجي<br/>External KMS"]
+
+  classDef implemented fill:#dcfce7,stroke:#166534,color:#14532d
+  classDef store fill:#dbeafe,stroke:#1e40af,color:#1e3a8a
+  classDef failure fill:#fee2e2,stroke:#991b1b,color:#7f1d1d
+  classDef external fill:#e0f2fe,stroke:#075985,color:#0c4a6e
+  classDef planned fill:#f1f5f9,stroke:#64748b,color:#334155,stroke-dasharray: 5 5
+  classDef readonly fill:#f0fdf4,stroke:#3f6212,color:#365314
+
+  class PAGES readonly
+  class NOBACKEND failure
+  class BROWSER,DASH,API,AUTH,PIPE,CERT,SANDBOX implemented
+  class PG,REDIS store
+  class UPSTREAM external
+  class KMS planned

@@ -1,0 +1,30 @@
+{
+  "name": "@agentbridge/agents",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vitest run --coverage",
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@agentbridge/hardening": "workspace:*",
+    "@agentbridge/llm": "workspace:*",
+    "@agentbridge/memory": "workspace:*",
+    "@agentbridge/shared": "workspace:*",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@agentbridge/spec-parser": "workspace:*",
+    "@agentbridge/analyzer": "workspace:*",
+    "@vitest/coverage-v8": "^2.1.8",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  },
+  "license": "Apache-2.0"
+}

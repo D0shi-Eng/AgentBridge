@@ -1,0 +1,36 @@
+{
+  "name": "@agentbridge/cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "agentbridge": "./src/main.ts",
+    "agentbridge-ops": "./src/ops/ops-main.ts"
+  },
+  "scripts": {
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vitest run",
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@agentbridge/agents": "workspace:*",
+    "@agentbridge/evaluator": "workspace:*",
+    "@agentbridge/hardening": "workspace:*",
+    "@agentbridge/llm": "workspace:*",
+    "@agentbridge/orchestrator": "workspace:*",
+    "@agentbridge/shared": "workspace:*",
+    "zod": "^3.25.76",
+    "@agentbridge/infra": "workspace:*",
+    "@agentbridge/memory": "workspace:*",
+    "@prisma/client": "^6.19.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  },
+  "license": "Apache-2.0"
+}

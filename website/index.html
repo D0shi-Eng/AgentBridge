@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AgentBridge — من OpenAPI إلى خادم MCP قابل للمراجعة</title>
+<meta name="description" content="AgentBridge منصة ويب ذاتية الاستضافة تحوّل مواصفات OpenAPI 3.x إلى خوادم MCP قابلة للمراجعة مع فحوص أمنية معزولة وشهادة موقعة قابلة للتحقق.">
+<link rel="icon" href="../docs/assets/monogram.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">تخطَّ إلى المحتوى</a>
+
+<header class="site">
+  <div class="wrap bar">
+    <a class="brand" href="./index.html">
+      <img src="../docs/assets/logo.svg" alt="" width="40" height="40">
+      <span>AgentBridge</span>
+    </a>
+    <nav class="langs" aria-label="اختيار اللغة">
+      <a href="./index.html" aria-current="page" lang="ar">العربية</a>
+      <a href="./en/index.html" lang="en">English</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+  <div class="hero">
+    <h1>من مواصفة OpenAPI إلى خادم MCP قابل للمراجعة — بشهادة موقعة وقابلة للتحقق</h1>
+    <p>AgentBridge منصة ويب ذاتية الاستضافة تحلل واجهاتك البرمجية، وتقترح أدوات لوكلاء الذكاء الاصطناعي، وتولّد خادم MCP، وتهاجمه بفحوص أمنية داخل صندوق معزول، ثم تمنح — أو ترفض — شهادة موقعة مربوطة ببصمة الناتج.</p>
+    <ul class="pills">
+      <li class="ok">ترخيص Apache-2.0</li>
+      <li class="ok">يعمل محليًا بلا مفاتيح (مزود LLM محاكى)</li>
+      <li class="warn">للتقييم المحلي — التشغيل الإنتاجي غير مدعوم في هذه النسخة</li>
+    </ul>
+  </div>
+
+  <section aria-labelledby="type">
+    <h2 id="type">نوع المنتج: منصة ويب ذاتية الاستضافة</h2>
+    <div class="card">
+      <p>AgentBridge <strong>منصة ويب تستضيفها بنفسك</strong> — ليست تطبيق Android أو iOS، وليست تطبيق سطح مكتب. مجلد <code>apps/</code> يعني الوحدات القابلة للتشغيل:</p>
+      <div class="grid">
+        <div class="card"><h3>apps/api</h3><p>خادم ويب Fastify يقدم REST وSSE ونقطة التحقق العلنية.</p></div>
+        <div class="card"><h3>apps/dashboard</h3><p>لوحة ويب Next.js تفتحها من المتصفح: رفع المواصفات ومتابعة المسار وHITL.</p></div>
+        <div class="card"><h3>apps/cli</h3><p>أداة سطر أوامر تشغّل مسار المعالجة نفسه على ملفاتك محليًا.</p></div>
+      </div>
+      <p>طريقتا الاستخدام: <strong>(1)</strong> خدمة ويب تشغّلها على جهازك أو خادمك وتفتحها من المتصفح، أو <strong>(2)</strong> سطر أوامر للمطورين فوق شيفرة المصدر المفتوحة.</p>
+      <p class="note">فتح مستودع المشروع للجمهور لا يشغّل أي خدمة ولا يستضيف شيئًا — لا توجد نسخة مستضافة من AgentBridge.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="site-vs-platform">
+    <h2 id="site-vs-platform">هذا الموقع ليس المنصة</h2>
+    <div class="card">
+      <p>هذه الصفحات <strong>موقع ثابت</strong> للتعريف والتوثيق. المنصة الكاملة هي ما تشغّله أنت محليًا من المستودع. الموقع الثابت <strong>لا ينفذ</strong>:</p>
+      <ul class="checks no">
+        <li>واجهة Fastify البرمجية أو بث SSE الخلفي</li>
+        <li>PostgreSQL أو Redis أو pgvector</li>
+        <li>صندوق Docker المعزول أو توليد وفحص MCP الكامل</li>
+        <li>تسجيل دخول حقيقي أو تخزين أي أسرار أو بيانات مستخدمين</li>
+      </ul>
+      <p class="muted">بلا نماذج إدخال، وبلا تتبع أو تحليلات، وبلا أي طلبات خارجية — ملفات جاهزة للقراءة فقط.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="how">
+    <h2 id="how">كيف يعمل</h2>
+    <p>مسار معالجة حتمي من ثماني مراحل مع حلقة إصلاح محدودة: الاستيعاب ← التحليل ← تصميم الأدوات (باستشهادات إلزامية) ← التوليد الحتمي ← التحصين (12 فحصًا ساكنًا و8 فحوص حية داخل حاوية مقيدة) ← التقييم ← المراجعة البشرية للأدوات الحساسة (HITL) ← الشهادة. الدرجة 85 فأعلى وصفر نتائج حرجة تمنح شهادة «Agent-Ready Verified» موقعة Ed25519 ومربوطة ببصمة SHA-256 للناتج.</p>
+    <figure>
+      <img src="../docs/architecture/diagrams/svg/03-openapi-pipeline.svg" alt="رسم مسار المعالجة من OpenAPI حتى الشهادة بمراحله الثماني وحلقة الإصلاح" loading="lazy">
+      <figcaption>AB-DIAG-03 — مسار OpenAPI حتى الشهادة. <a href="https://github.com/D0shi-Eng/AgentBridge/tree/main/docs/architecture/diagrams">كل الرسومات الـ14 في المستودع</a>.</figcaption>
+    </figure>
+  </section>
+
+  <section aria-labelledby="arch">
+    <h2 id="arch">المعمارية باختصار</h2>
+    <div class="card">
+      <p>نمطية متجانسة بحدود سداسية: <code>packages/</code> وحدات بمنافذ ومحولات قابلة للفك إلى خدمات لاحقًا، و<code>apps/</code> طبقة تجميع. قاعدة التبعية حديدية: النطاق الدلالي لا يعتمد البنية التحتية، والحتمي أولًا — الخوارزميات قبل نداء النماذج، وكل خرج نموذجي يمر عبر تحقق Zod وطبقات الحقيقة.</p>
+      <figure>
+        <img src="../docs/architecture/diagrams/svg/01-system-context.svg" alt="رسم سياق النظام: المتصفح وواجهة API والمستأجر وحدود الثقة" loading="lazy">
+        <figcaption>AB-DIAG-01 — سياق النظام وحدود الثقة.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section aria-labelledby="security">
+    <h2 id="security">الأمن وحدوده بصراحة</h2>
+    <div class="card">
+      <ul class="checks">
+        <li>أسرار المنصة من البيئة حصرًا مع تحقق Zod عند الإقلاع وسجلات محجوبة.</li>
+        <li>مفاتيح المستأجرين مجزأة بـ scrypt، واعتماديات الواجهات العلوية مغلفة AES-256-GCM.</li>
+        <li>الفحوص الحية داخل حاوية بجذر قراءة-فقط ومستخدم غير جذر وشبكة محصورة على localhost.</li>
+        <li>عزل المستأجرين بنيوي مع RLS ودور قاعدة بيانات مقيد.</li>
+        <li>شهادة موقعة + نقطة تحقق علنية بقائمة حقول بيضاء صارمة.</li>
+      </ul>
+      <p class="warnbox"><strong>الحدود:</strong> الشهادة توثق تشغيل سياسة واحدة لا أمانًا مطلقًا؛ والصندوق رهين إعداد مضيف Docker لديك؛ وسياسة الخروج الشبكية العامة وKMS الخارجي غير منفذين؛ ولا يوجد أي نشر إنتاجي لهذا النظام.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="selfhost">
+    <h2 id="selfhost">التشغيل الذاتي في دقيقتين (بلا مفاتيح)</h2>
+    <div class="card">
+      <h3>سطر الأوامر — تجربة أسرع</h3>
+      <pre><code># يتطلب Node.js ≥ 20 وpnpm
+pnpm install
+pnpm exec tsx apps/cli/src/main.ts \
+  --spec tests/fixtures/mini-petstore.yaml --out ./ab-out</code></pre>
+      <p>تظهر أحداث المراحل في الطرفية، وفي <code>./ab-out</code>: خادم MCP مولَّد + <code>certificate.json</code> + <code>badge.svg</code> + <code>events.ndjson</code>. رمز الخروج 0 = شهادة منححة، 2 = رفض موثق.</p>
+      <h3>المنصة الكاملة (خدمة ويب)</h3>
+      <pre><code>docker compose -f docker-compose.dev.yaml up -d   # PostgreSQL+pgvector وRedis
+pnpm --filter @agentbridge/infra exec prisma generate
+pnpm --filter @agentbridge/infra exec prisma migrate deploy      # على قاعدة فارغة
+pnpm --filter @agentbridge/api start        # الواجهة على :3000
+pnpm --filter @agentbridge/dashboard dev    # اللوحة على :3001</code></pre>
+      <p>إنشاء مساحة العمل والمفتاح يتم عبر <code>agentbridge-ops onboard-tenant</code> (المفتاح الخام يُكتب ذرياً في ملف لا في السجلات). التسلسل الكامل المتحقق منه ومتغيرات البيئة في <a href="https://github.com/D0shi-Eng/AgentBridge#readme">README المستودع</a>.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="links">
+    <h2 id="links">روابط</h2>
+    <div class="card">
+      <ul>
+        <li><a href="https://github.com/D0shi-Eng/AgentBridge">مستودع الشيفرة على GitHub</a></li>
+        <li><a href="https://github.com/D0shi-Eng/AgentBridge/tree/main/docs">التوثيق الكامل (عربي/إنجليزي)</a></li>
+        <li><a href="https://github.com/D0shi-Eng/AgentBridge/blob/main/SECURITY.md">سياسة الأمن والإبلاغ</a></li>
+        <li><a href="https://github.com/D0shi-Eng/AgentBridge/blob/main/LICENSE">رخصة Apache-2.0</a></li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p>AgentBridge — مشروع مفتوح المصدر برخصة <a href="https://github.com/D0shi-Eng/AgentBridge/blob/main/LICENSE">Apache-2.0</a>. هذا الموقع الثابت للتعريف والتوثيق فقط، وهو ليس المنصة ولا يستضيف أي خدمة.</p>
+  </div>
+</footer>
+</body>
+</html>

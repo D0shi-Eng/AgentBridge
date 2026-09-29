@@ -1,0 +1,56 @@
+# حالة K1 الأساس (OpenAPI 3.0): petstore صغير مع معاملات مسار واستعلام وأمن apiKey
+openapi: 3.0.3
+info:
+  title: Clinic Appointments API (synthetic)
+  version: 1.0.0
+paths:
+  /appointments:
+    get:
+      operationId: listAppointments
+      summary: List appointments with pagination
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100 }
+        - name: X-Branch
+          in: header
+          required: false
+          schema: { type: string }
+      responses:
+        "200":
+          description: appointments page
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/Appointment" }
+                  nextCursor: { type: string, nullable: true }
+    post:
+      operationId: createAppointment
+      summary: Book an appointment
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AppointmentInput" }
+      responses:
+        "201": { description: created }
+components:
+  schemas:
+    Appointment:
+      type: object
+      required: [id, when]
+      properties:
+        id: { type: string }
+        when: { type: string, format: date-time }
+        patientName:
+          type: string
+          description: Full name of the patient
+    AppointmentInput:
+      type: object
+      required: [when]
+      properties:
+        when: { type: string, format: date-time }
+        note: { type: string }

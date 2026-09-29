@@ -1,0 +1,19 @@
+%% AB-DIAG-04 — MCP request path: client to generated server to upstream | Status: IMPLEMENTED
+%% الأدوات تتحقق بمخططات Zod وتفرض requiredScopes؛ أخطاء upstream تُنظف قبل العميل
+flowchart TB
+  CLIENT["AI agent - MCP client"] -- "stdio JSON-RPC" --> TRANSPORT["StdioServerTransport - official MCP SDK"]
+  TRANSPORT --> SERVER["server.ts - McpServer bootstrap"]
+  SERVER --> TOOLS["tools.ts - one tool per design, zod input schema"]
+  TOOLS -- "reject invalid args" --> CLIENT
+  TOOLS --> SCOPE{"requiredScopes met?"}
+  SCOPE -- "no" --> CLIENT
+  SCOPE -- "yes" --> UPCLI["upstream-client.ts - timeout, path encoding, sanitized errors"]
+  CONFIG["config.ts - env fail-fast, UPSTREAM_BASE_URL required"] -.-> UPCLI
+  UPCLI -- "HTTPS" --> UP["Upstream SaaS API"]
+  UP -- "response" --> UPCLI
+  UPCLI -- "clean response, no upstream internals" --> TOOLS
+  TOOLS -- "tool result" --> CLIENT
+  classDef impl fill:#e8f5e9,stroke:#2e7d32
+  classDef ext fill:#eef2ff,stroke:#475569
+  class TRANSPORT,SERVER,TOOLS,UPCLI,CONFIG impl
+  class CLIENT,UP ext

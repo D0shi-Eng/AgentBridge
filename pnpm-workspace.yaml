@@ -1,0 +1,29 @@
+# تعريف مساحات عمل المونوريبو
+packages:
+  - "apps/*"
+  - "packages/*"
+  - "tests/e2e"
+
+# سياسة سلسلة التوريد: السماح ببناء هذه التبعيات فقط (postinstall)
+allowBuilds:
+  "@prisma/client": true
+  "@prisma/engines": true
+  esbuild: true
+  prisma: true
+  sharp: false
+
+verifyDepsBeforeRun: false
+
+# تصحيحات أمنية ضمن نطاق الآباء المتوافق (ADR-31): قفزات minor/patch فقط
+# لمسارات إنتاج (hono عبر MCP SDK، postcss عبر next) وتصحيح رخيص في
+# مسار التطوير (js-yaml). أي إصلاح يستلزم major موثق قراراً منفصلاً.
+overrides:
+  "qs@>=6.14.2 <6.16.0": "6.16.0"
+  "fast-uri@>=3.0.0 <3.1.7": "3.1.7"
+  "fast-uri@>=4.0.0 <4.1.4": "4.1.4"
+  "hono@>=4.0.0 <4.13.5": "4.13.5"
+  "postcss@>=8.0.0 <8.5.23": "8.5.23"
+  "js-yaml@>=4.0.0 <4.3.2": "4.3.2"
+  # GHSA-rpw4-54j3-4h4q + GHSA-2vr4-cq9g-pvrc عبر express-rate-limit في
+  # الخوادم المولدة - المصحح 10.5.1+ داخل نطاق الآباء (^10.2.0)
+  "ip-address@>=10.2.0 <=10.5.0": "10.7.2"

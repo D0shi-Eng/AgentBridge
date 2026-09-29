@@ -1,0 +1,39 @@
+%% AB-DIAG-05 — Agents, DAG, repair, HITL, resume, signed snapshots | Status: IMPLEMENTED
+%% الوكلاء يقترحون ويقيّمون؛ المحرك حتمي صفر LLM؛ اللقطات موقعة SHA-256 وتُتحقق حقلاً بحقل
+flowchart TB
+  ENGINE["orchestrator engine - graph.ts, engine.ts, retry-policy.ts"]
+  subgraph NODES["Pipeline nodes"]
+    DET["deterministic nodes - load, normalize, generate, harden"]
+    AG1["DesignerAgent - tool design, zod contract"]
+    AG2["EvaluatorAgent - quality score with justifications"]
+    AG3["AuditorAgent - findings triage, read-only"]
+    AG4["RepairerAgent - patch, max 3 rounds"]
+  end
+  SNAP["context-store.ts - signed snapshots SHA-256, schema-checked on resume"]
+  EVT["event-log.ts - PipelineEvent stream"]
+  L1S["L1 episodic store - Redis stream + state, TTL 7d"]
+  AUD["audit chain entry per gate decision"]
+  HUMAN{"needs_human?"}
+  RESUME["resume - reload last snapshot, verify signature + fields"]
+  ENGINE --> DET
+  ENGINE --> AG1
+  ENGINE --> AG2
+  ENGINE --> AG3
+  ENGINE --> AG4
+  AG4 -- "patch applied" --> AG1
+  AG4 -. "rounds exhausted" .-> HUMAN
+  HUMAN -- "yes" --> WAIT["suspend after stage - withSuspensionAfter"]
+  WAIT --> REVIEW["human approval in dashboard"]
+  REVIEW -- "approved" --> ENGINE
+  ENGINE --> SNAP
+  ENGINE --> EVT
+  EVT --> L1S
+  EVT --> AUD
+  SNAP --> RESUME
+  RESUME --> ENGINE
+  classDef agent fill:#ede7f6,stroke:#4527a0
+  classDef det fill:#e8f5e9,stroke:#2e7d32
+  classDef store fill:#e3f2fd,stroke:#1565c0
+  class AG1,AG2,AG3,AG4 agent
+  class ENGINE,DET det
+  class SNAP,EVT,L1S,AUD,WAIT,REVIEW,RESUME,HUMAN store

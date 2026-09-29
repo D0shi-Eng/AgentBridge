@@ -1,0 +1,269 @@
+/**
+ * أنماط مكونات النظام المشتركة — البطاقات والجداول والحالات والحركة والقشرة.
+ * الأسماء هنا هي العقد البصري الذي تعتمده مكوّنات components/ui.
+ * كل الخصائص الأفقية منطقية (inline-start/end) — RTL/LTR يقلبان بلا كود.
+ */
+
+/* ===== القشرة الموحدة للتطبيق ===== */
+.app-shell { display: flex; flex-direction: column; min-height: 100vh; }
+.app-header {
+  position: sticky; top: 0; z-index: var(--z-sticky);
+  background: rgba(7, 11, 24, 0.88); backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+.app-header-row {
+  max-width: var(--container-wide); margin: 0 auto; padding: 0 var(--space-25);
+  display: flex; align-items: center; gap: var(--space-2); min-height: 60px; flex-wrap: wrap;
+}
+.app-nav { display: flex; align-items: center; gap: var(--space-05); flex-wrap: wrap; }
+.app-nav a {
+  color: var(--text-secondary); text-decoration: none; font-size: var(--text--1);
+  font-weight: 600; padding: 7px 12px; border-radius: var(--radius-sm);
+  transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+  white-space: nowrap;
+}
+.app-nav a:hover { color: var(--text); background: rgba(59, 130, 246, 0.08); }
+.app-nav a[aria-current="page"] { color: var(--brand-green); background: var(--brand-green-soft); }
+.app-header-spacer { flex: 1; }
+.user-chip { display: flex; align-items: center; gap: var(--space-1); font-size: var(--text--1); color: var(--muted); }
+.user-chip b { direction: ltr; unicode-bidi: embed; color: var(--text); font-family: Consolas, monospace; font-weight: 600; }
+
+/* قائمة الجوال: زر أيقونة مضغوط تحت 768px، والحساب داخل القائمة */
+.nav-toggle { display: none; }
+.nav-menu-meta { display: none; }
+.user-chip-desktop { display: flex; }
+@media (max-width: 767px) {
+  .app-header-row { min-height: 50px; padding-top: 0; padding-bottom: 0; flex-wrap: nowrap; }
+  .brand { font-size: var(--text-0); }
+  .nav-toggle {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 44px; height: 44px; padding: 0;
+    background: transparent; border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm); color: var(--text-secondary); cursor: pointer;
+  }
+  /* شريط المستخدم المكتبي يختفي — الحساب داخل القائمة */
+  .user-chip-desktop { display: none; }
+  .app-nav {
+    display: none; flex-basis: 100%; flex-direction: column; align-items: stretch;
+    padding: var(--space-1) 0 var(--space-2);
+  }
+  .app-nav[data-open="true"] { display: flex; }
+  .app-nav a { padding: 12px var(--space-15); min-height: 44px; }
+  /* حاوية الحساب واللغة داخل القائمة */
+  .nav-menu-meta {
+    display: flex; flex-direction: column; gap: var(--space-1);
+    padding: var(--space-1) var(--space-15) 0;
+    border-top: 1px dashed var(--border); margin-top: var(--space-1);
+  }
+  .nav-menu-meta .user-chip { font-size: var(--text--2); overflow: hidden; }
+  .nav-menu-meta .user-chip b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px; display: inline-block; vertical-align: bottom; }
+}
+/* قص أسماء المستأجر الطويلة في الشريط المكتبي */
+.tenant-truncate { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ===== مسار التنقل Breadcrumbs ===== */
+.breadcrumbs ol { list-style: none; display: flex; flex-wrap: wrap; gap: var(--space-05); align-items: center; font-size: var(--text--2); color: var(--muted); }
+.breadcrumbs li { display: flex; align-items: center; gap: var(--space-05); }
+.breadcrumbs li + li::before { content: "/"; color: var(--border-strong); margin-inline-end: var(--space-05); }
+.breadcrumbs a { color: var(--muted); text-decoration: none; }
+.breadcrumbs a:hover { color: var(--sky); }
+.breadcrumbs [aria-current="page"] { color: var(--text-secondary); }
+
+/* ===== الشريط العلوي القديم (صفحات بلا قشرة بعد) ===== */
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-25); gap: var(--space-15); flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 10px; font-size: var(--text-1); font-weight: 800; letter-spacing: -0.01em; }
+.tenant-chip { color: var(--muted); font-size: var(--text--1); display: flex; align-items: center; gap: 10px; }
+.tenant-chip b { direction: ltr; unicode-bidi: embed; color: var(--text); font-family: Consolas, monospace; }
+
+/* ===== البطاقات ===== */
+.card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: var(--space-25) var(--space-25) var(--space-2); margin-bottom: var(--space-2);
+  box-shadow: var(--shadow-1);
+}
+.card h2, .card-title {
+  font-size: var(--text--1); font-weight: 700; color: var(--muted); letter-spacing: 0.08em; margin-bottom: var(--space-15);
+}
+
+/* ===== بطاقات الإحصاء ===== */
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-15); margin-bottom: var(--space-2); }
+.stat-card {
+  background: linear-gradient(160deg, var(--card-raised), var(--card));
+  border: 1px solid var(--border); border-radius: var(--radius-md);
+  padding: var(--space-15) var(--space-2); box-shadow: var(--shadow-1);
+}
+/* كثافة الجوال: بطاقة مدمجة رقم+عنوان دون ارتفاع زائد أو شريط مزدحم */
+@media (max-width: 767px) {
+  .stat-grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-1); }
+  .stat-card { padding: var(--space-1) var(--space-15); }
+  .stat-value { font-size: var(--text-1); }
+  .stat-label { font-size: var(--text--2); line-height: 1.4; }
+}
+.stat-value { font-size: var(--text-2); font-weight: 800; line-height: 1.2; direction: ltr; unicode-bidi: embed; text-align: start; }
+.stat-label { font-size: var(--text--2); color: var(--muted); margin-top: 2px; }
+
+/* ===== الجداول — الاسم الرسمي table.list ===== */
+.table-scroll { overflow-x: auto; } /* جداول ضيقة تتمرر أفقياً داخل غلافها لا الصفحة */
+table.list { width: 100%; border-collapse: collapse; font-size: var(--text--1); }
+table.list td, table.list th { text-align: start; padding: var(--table-pad-y) var(--table-pad-x); border-bottom: 1px dashed var(--border); }
+table.list th { color: var(--muted); font-size: var(--text--2); letter-spacing: 0.06em; }
+table.list tbody tr { transition: background var(--dur-fast) var(--ease); }
+table.list tbody tr:hover { background: rgba(59, 130, 246, 0.05); }
+table.list tr:last-child td { border: none; }
+table.list td.mono-cell, table.list .mono { word-break: break-all; }
+
+/* ===== شارات الحالة — اللون داعم لا وحيد: النص يحمل المعنى ===== */
+.pill { display: inline-block; padding: 3px 11px; border-radius: var(--radius-full); font-size: var(--text--2); font-weight: 700; white-space: nowrap; }
+.pill.running { background: rgba(56, 189, 248, 0.15); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.4); }
+.pill.completed { background: var(--brand-green-soft); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.4); }
+.pill.failed, .pill.needs_human { background: var(--red-soft); color: var(--red); border: 1px solid rgba(248, 113, 113, 0.4); }
+.pill.suspended, .pill.warning { background: rgba(251, 191, 36, 0.15); color: var(--amber); border: 1px solid rgba(251, 191, 36, 0.45); }
+.pill.neutral { background: rgba(170, 182, 218, 0.12); color: var(--text-secondary); border: 1px solid var(--border-strong); }
+
+/* ===== Stepper المراحل الثماني — أعمدة على الشاشات الواسعة، قائمة عمودية تحت 768px ===== */
+.stepper { list-style: none; display: grid; grid-template-columns: repeat(8, 1fr); gap: var(--space-05); counter-reset: step; }
+.step { position: relative; text-align: center; padding-top: 30px; font-size: var(--text--2); color: var(--muted); transition: color var(--dur-base) var(--ease); }
+.step::before {
+  content: ""; position: absolute; top: 6px; inset-inline-start: calc(50% - 9px); width: 18px; height: 18px;
+  border-radius: var(--radius-full); border: 2px solid var(--border-strong); background: var(--inset);
+  transition: all var(--dur-base) var(--ease);
+}
+/* خط الوصل يمتد نحو الخطوة السابقة — inset-inline-start يقلب مع الاتجاه تلقائياً */
+.step::after { content: ""; position: absolute; top: 14px; inset-inline-start: -50%; width: 100%; height: 2px; background: var(--border); z-index: -1; transition: background var(--dur-slow) var(--ease); }
+.step:first-child::after { display: none; }
+.step.done { color: #4ade80; }
+.step.done::before { content: "✓"; line-height: 14px; font-size: 11px; font-weight: 900; border-color: var(--brand-green); background: var(--brand-green-deep); color: #bbf7d0; }
+.step.done::after { background: var(--brand-green-strong); }
+.step.active { color: var(--sky); font-weight: 700; }
+.step.active::before { border-color: var(--sky); box-shadow: 0 0 10px rgba(56, 189, 248, 0.65); animation: pulse-step 1.4s infinite var(--ease); }
+.step.failed { color: var(--red); font-weight: 700; }
+.step.failed::before { border-color: var(--red); content: "!"; line-height: 13px; font-weight: 900; }
+.step.repair { color: var(--amber); font-weight: 700; }
+.step.repair::before { border-color: var(--amber); animation: pulse-repair 1.2s infinite var(--ease); }
+.step.pending::before { opacity: 0.6; }
+
+/* الوضع العمودي للجوال: صف لكل مرحلة، النقطة في بداية السطر، لا قص ولا تمرير */
+@media (max-width: 767px) {
+  .stepper { grid-template-columns: 1fr; gap: 0; }
+  .step { text-align: start; padding: 0 0 18px 0; padding-inline-start: 30px; min-height: 24px; }
+  .step::before { top: 2px; inset-inline-start: 2px; }
+  .step::after { top: 22px; inset-inline-start: 10px; width: 2px; height: calc(100% - 16px); }
+  .step:first-child::after { display: block; }
+  .step:last-child::after { display: none; }
+}
+
+@keyframes pulse-repair {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4); }
+  50% { box-shadow: 0 0 0 7px rgba(251, 191, 36, 0); }
+}
+
+@keyframes pulse-step {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.45); }
+  50% { box-shadow: 0 0 0 7px rgba(56, 189, 248, 0); }
+}
+
+/* ===== حلقة الدرجة ScoreRing ===== */
+.ring {
+  --p: 0; --ring-c: var(--brand-green);
+  width: 108px; height: 108px; border-radius: var(--radius-full); position: relative;
+  display: grid; place-items: center; flex-shrink: 0;
+  background: conic-gradient(var(--ring-c) calc(var(--p) * 1%), #223059 0);
+  transition: --p var(--dur-slow) var(--ease);
+}
+.ring::before { content: ""; position: absolute; width: 84px; height: 84px; border-radius: var(--radius-full); background: var(--card); }
+.ring b { position: relative; font-size: var(--text-2); color: var(--ring-c); direction: ltr; }
+.ring .verdict { position: absolute; bottom: -20px; font-size: var(--text--2); font-weight: 700; white-space: nowrap; }
+
+/* ===== الهياكل المؤقتة Skeleton ===== */
+.skeleton {
+  position: relative; overflow: hidden; background: var(--inset);
+  border-radius: var(--radius-sm); min-height: 14px;
+}
+.skeleton::after {
+  content: ""; position: absolute; inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(170, 182, 218, 0.09), transparent);
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer { to { transform: translateX(100%); } }
+
+/* ===== حالة الفراغ EmptyState ===== */
+.empty { text-align: center; padding: var(--space-5) var(--space-3); color: var(--muted); }
+.empty .icon { font-size: var(--text-3); margin-bottom: var(--space-1); opacity: 0.85; }
+.empty .title { font-size: var(--text-0); font-weight: 700; color: var(--text-secondary); margin-bottom: var(--space-05); }
+.empty .hint { font-size: var(--text--1); max-width: 420px; margin: 0 auto; }
+
+/* ===== التنبيهات Toast — وصولية كاملة : زر إغلاق حقيقي وشريط بداية منطقي ===== */
+.toast-stack {
+  position: fixed; bottom: var(--space-25); inset-inline-start: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; gap: var(--space-1); z-index: var(--z-toast);
+  width: min(92vw, 480px);
+}
+.toast {
+  display: flex; align-items: flex-start; gap: var(--space-1);
+  background: var(--card-raised); border: 1px solid var(--border-strong);
+  border-inline-start: 4px solid var(--sky);
+  border-radius: var(--radius-md); padding: 11px var(--space-15); font-size: var(--text--1);
+  box-shadow: var(--shadow-2); animation: toast-in var(--dur-slow) var(--ease);
+}
+.toast.success { border-inline-start-color: var(--brand-green); }
+.toast.error { border-inline-start-color: var(--red); }
+.toast .toast-message { flex: 1; overflow-wrap: anywhere; }
+.toast .toast-close {
+  flex-shrink: 0; background: transparent; border: none; cursor: pointer;
+  color: var(--muted); font-size: var(--text-0); line-height: 1;
+  min-width: 44px; min-height: 44px; border-radius: var(--radius-sm);
+  transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.toast .toast-close:hover { color: var(--text); background: rgba(170, 182, 218, 0.1); }
+@keyframes toast-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+/* ===== الخط الزمني للأحداث — خصائص منطقية بالكامل ===== */
+ol.timeline { list-style: none; position: relative; padding-inline-start: 22px; }
+ol.timeline::before { content: ""; position: absolute; inset-inline-start: 7px; top: 6px; bottom: 6px; width: 2px; background: var(--border); }
+ol.timeline li { position: relative; padding: 7px 0; font-size: var(--text--1); display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+ol.timeline li::before {
+  content: ""; position: absolute; inset-inline-start: -21px; top: 14px; width: 10px; height: 10px;
+  border-radius: var(--radius-full); background: var(--sky); box-shadow: 0 0 8px var(--sky);
+}
+.stage-tag { direction: ltr; unicode-bidi: embed; font-family: Consolas, monospace; background: #1a2447; border: 1px solid #2c3c72; padding: 2px 10px; border-radius: 7px; font-size: var(--text--2); color: #9fc1ff; }
+.summary-ar { color: var(--text-secondary); }
+
+/* ===== أدوات HITL ===== */
+.tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-15); }
+.tool-card { background: var(--inset); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-15); font-size: var(--text--1); transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
+.tool-card:hover { transform: translateY(-2px); border-color: var(--border-strong); }
+.tool-card .name { direction: ltr; unicode-bidi: embed; text-align: start; font-family: Consolas, monospace; color: #9fc1ff; font-weight: 700; margin-bottom: 6px; word-break: break-all; }
+.tool-card .desc { color: var(--text-secondary); line-height: 1.6; margin-bottom: var(--space-1); }
+.tool-card .eps { direction: ltr; unicode-bidi: embed; text-align: start; font-family: Consolas, monospace; font-size: var(--text--2); color: var(--muted); }
+
+/* لوحة حالة المنع — ناضجة بلا زخرفة: رمز وعنوان وشرح وCTA */
+.forbidden-panel {
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-1);
+  text-align: center; padding: var(--space-4) var(--space-2);
+  background: var(--inset); border: 1px solid var(--border-strong); border-radius: var(--radius-md);
+}
+.forbidden-panel .forbidden-icon { color: var(--amber); opacity: 0.9; }
+.forbidden-panel h2 { font-size: var(--text-1); }
+.forbidden-panel p { color: var(--text-secondary); font-size: var(--text--1); max-width: 460px; line-height: 1.8; }
+
+/* خطوة التوكيد الداخلية للإجراءات الحساسة — شرح ثم قرار */
+.confirm-panel {
+  background: var(--inset); border: 1px dashed var(--border-strong); border-radius: var(--radius-md);
+  padding: var(--space-15); margin-top: var(--space-15); font-size: var(--text--1);
+  color: var(--text-secondary);
+}
+.confirm-panel .actions { display: flex; gap: var(--space-1); margin-top: var(--space-1); flex-wrap: wrap; }
+
+.downloads { display: flex; gap: 10px; flex-wrap: wrap; margin-top: var(--space-15); }
+.cert-panel { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
+
+/* ===== حركة دخول هادئة ===== */
+.fade-up { animation: fade-up var(--dur-slow) var(--ease) both; }
+@keyframes fade-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+/* احترام تقليل الحركة — تُبقى الوظيفة وتُزل الحركة */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  html { scroll-behavior: auto; }
+}

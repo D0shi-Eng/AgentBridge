@@ -1,0 +1,153 @@
+# الفحوص البنيوية المستمرة — هذا الملف لا يحتوي أي عمليات نشر (deployment).
+# تُشغَّل على كل دفع وPR: الفحوص بالتتابع داخل كل مهمة، وبعامل واحد لكل مهمة.
+
+name: ci
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+# أقل صلاحية ممكنة لكل المهام: قراءة المحتوى فقط — لا نشر ولا صفحات
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: typecheck, lint, tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Enable pinned pnpm (packageManager field)
+        run: corepack enable
+      - name: Install dependencies (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+      - name: Generate Prisma client (typed client is required by typecheck/tests/build)
+        run: pnpm --filter @agentbridge/infra exec prisma generate
+      # جناح عزل sandbox يمارس الصورة فعلياً — بلا بنائها تمر سيناريوهات
+      # الرفض إفراغاً (docker run يرجع 125 لصورة غائبة) فيكذب البوابة
+      - name: Build sandbox runner image (exercised by the sandbox isolation suite)
+        run: |
+          pnpm --filter @agentbridge/shared build
+          pnpm --filter @agentbridge/hardening build
+          cp -r packages/shared/dist docker/sandbox-runner/shared-dist
+          cp -r packages/hardening/dist docker/sandbox-runner/hardening-dist
+          cp packages/shared/package.json docker/sandbox-runner/shared-package.json
+          cp packages/hardening/package.json docker/sandbox-runner/hardening-package.json
+          docker build -t agentbridge/sandbox-runner:isolated docker/sandbox-runner
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Lint
+        run: pnpm lint
+      - name: Tests (conditional live suites skip themselves with documented names)
+        run: pnpm test
+
+  build:
+    name: builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - name: Generate Prisma client (typed client is required by typecheck/tests/build)
+        run: pnpm --filter @agentbridge/infra exec prisma generate
+      - name: Build all workspaces
+        run: pnpm build
+
+  security:
+    name: secret scanning and dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # فحص التاريخ الكامل يلزم للماسح
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: corepack enable
+      - name: Secret scan on the full git history (no allowlist bypass on CI)
+        run: node scripts/release/secret-scan.mjs history --root .
+      - name: Secret scan on the worktree
+        run: node scripts/release/secret-scan.mjs worktree --root .
+      - name: Secret scanner regression tests (allowlist pinning contract)
+        run: node --test scripts/release/secret-scan.test.mjs
+      - name: "Dependency audit (production dependencies, documented allowlist)"
+        run: node scripts/release/dependency-audit.mjs
+
+  sbom:
+    name: SBOM (CycloneDX via pinned cdxgen)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - name: Generate Prisma client (typed client is required by typecheck/tests/build)
+        run: pnpm --filter @agentbridge/infra exec prisma generate
+      - name: "Generate SBOM (offline deterministic CycloneDX from pnpm-lock)"
+        run: node scripts/release/generate-sbom.mjs sbom.cdx.json
+      - uses: actions/upload-artifact@v7
+        with:
+          name: sbom-cyclonedx
+          path: sbom.cdx.json
+
+  licenses:
+    name: license validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - name: Generate Prisma client (typed client is required by typecheck/tests/build)
+        run: pnpm --filter @agentbridge/infra exec prisma generate
+      - name: Every workspace is Apache-2.0 and private:true
+        run: node scripts/release/check-licenses.mjs
+
+  docs:
+    name: docs gates (links, README parity, mermaid)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Markdown relative links and anchors
+        run: node scripts/release/check-markdown-links.mjs
+      - name: README English/Arabic parity
+        run: node scripts/release/readme-parity.mjs
+      # ubuntu-24.04 يقيد namespaces غير المميزة عبر AppArmor فيفقد Chromium
+      # صندوقه ("No usable sandbox"). النطاق الفعلي: هذا الإعداد مؤقت على
+      # آلة العامل ال ephemeral لهذه المهمة وحسب ولا يمس أي بيئة أخرى،
+      # والغاية تمكين صندوق Chromium نفسه (يشترط userns) — البديلان
+      # المرفوضان: --no-sandbox (يلغي الحماية) وتثبيت SUID sandbox
+      # (صيانة هشة عبر إصدارات puppeteer)
+      - name: Enable user namespaces so the Chromium sandbox can start (not --no-sandbox)
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+      - name: Mermaid validation (render every source; pinned mermaid-cli)
+        run: |
+          mkdir -p /tmp/mermaid-check
+          for f in docs/architecture/diagrams/src/*.mmd; do
+            npx -y @mermaid-js/mermaid-cli@11.4.2 -i "$f" -o "/tmp/mermaid-check/$(basename "$f" .mmd).svg" -b white
+          done
+
+  website:
+    name: static website checks (no Pages, no deploy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Static website structure and links
+        run: node website/check.mjs

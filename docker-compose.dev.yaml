@@ -1,0 +1,36 @@
+# بنية تحتية حية للتطوير المحلي فقط (S09) — ليست للإنتاج إطلاقاً
+# الاستخدام من جذر المستودع:
+#   docker compose -f docker-compose.dev.yaml up -d
+# المنافذ غير القياسية (5433/6380) عمداً حتى لا تتصادم مع أي خدمات محلية.
+services:
+  postgres:
+    # صورة pgvector الرسمية — امتداد vector مضمّن (تتطلبه هجرة memory_embeddings)
+    image: pgvector/pgvector:pg17
+    container_name: agentbridge-dev-postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: agentbridge
+      POSTGRES_PASSWORD: agentbridge
+      POSTGRES_DB: agentbridge
+    volumes:
+      - agentbridge-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agentbridge -d agentbridge"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  redis:
+    image: redis:7-alpine
+    container_name: agentbridge-dev-redis
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+volumes:
+  agentbridge-pgdata:

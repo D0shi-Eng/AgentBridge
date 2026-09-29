@@ -1,0 +1,28 @@
+{
+  "name": "@agentbridge/llm",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vitest run --coverage",
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@agentbridge/shared": "workspace:*",
+    "@anthropic-ai/sdk": "^0.122.0",
+    "openai": "^7.8.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@agentbridge/hardening": "workspace:*",
+    "@vitest/coverage-v8": "^2.1.8",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  },
+  "license": "Apache-2.0"
+}

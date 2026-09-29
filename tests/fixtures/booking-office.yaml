@@ -1,0 +1,255 @@
+# مواصفة واقعية 2 — نظام مكتب حجز ومعدات
+# غرضها: إثبات الخط على توثيق واقعي غير مثالي: أسماء عمليات ركيكة
+# (doBookingSearchV2/opCancel…)، استعلامات معقدة بعشرة فلاتر،
+# ومرشحات رديئة (بنية تشغيلية وعملية بلا توثيق) تُرفض تلقائيًا.
+openapi: "3.0.3"
+info:
+  title: "SiteHive Booking Office"
+  version: "0.9.12"
+security:
+  - bearerAuth: []
+paths:
+  /bookings:
+    get:
+      operationId: doBookingSearchV2
+      summary: "Search bookings with combined filters, sorting and cursor paging"
+      parameters:
+        - { name: dateFrom, in: query, schema: { type: string } }
+        - { name: dateTo, in: query, schema: { type: string } }
+        - { name: cityCode, in: query, schema: { type: string } }
+        - { name: resourceTypeId, in: query, schema: { type: string } }
+        - { name: minCapacitySeats, in: query, schema: { type: integer } }
+        - { name: maxHourlyRate, in: query, schema: { type: number } }
+        - { name: bookingState, in: query, schema: { type: string, enum: [draft, confirmed, closed] } }
+        - { name: sortKey, in: query, schema: { type: string, enum: [rate, date, capacity] } }
+        - { name: pageSizeInt, in: query, schema: { type: integer } }
+        - { name: cursorToken, in: query, schema: { type: string } }
+      responses:
+        "200": { description: "Matching bookings page" }
+    post:
+      operationId: createNewBooking
+      summary: "Create a draft booking for one resource across a requested window"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [resourceRef, customerRef, windowStart, windowEnd]
+              properties:
+                resourceRef: { type: string }
+                customerRef: { type: string }
+                windowStart: { type: string }
+                windowEnd: { type: string }
+                setupNotes: { type: string }
+      responses:
+        "201": { description: "Draft created" }
+  /bookings/{bookingRef}:
+    parameters:
+      - { name: bookingRef, in: path, required: true, schema: { type: string } }
+    get:
+      operationId: fetchSingleBooking
+      summary: "Fetch one booking with its cost breakdown and current state"
+      responses:
+        "200": { description: "Booking details" }
+    patch:
+      operationId: modifyBookingDetails
+      summary: "Amend booking window or notes while keeping its reference stable"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                windowStart: { type: string }
+                windowEnd: { type: string }
+                setupNotes: { type: string }
+      responses:
+        "200": { description: "Booking amended" }
+    delete:
+      operationId: opCancel
+      summary: "Cancel a confirmed booking and release the reserved time window"
+      responses:
+        "204": { description: "Cancelled" }
+  /resources:
+    get:
+      operationId: listResources
+      summary: "List bookable resources filtered by city and availability flag"
+      parameters:
+        - { name: cityCode, in: query, schema: { type: string } }
+        - { name: typeIdFilter, in: query, schema: { type: string } }
+        - { name: freeOnlyFlag, in: query, schema: { type: boolean } }
+      responses:
+        "200": { description: "Resource list" }
+    post:
+      operationId: addResource
+      summary: "Register a new bookable resource with capacity and hourly rate"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [displayName, cityCode, typeId, seatCount, hourlyRate]
+              properties:
+                displayName: { type: string }
+                cityCode: { type: string }
+                typeId: { type: string }
+                seatCount: { type: integer }
+                hourlyRate: { type: number }
+      responses:
+        "201": { description: "Resource registered" }
+  /resources/{resourceId}:
+    parameters:
+      - { name: resourceId, in: path, required: true, schema: { type: string } }
+    get:
+      operationId: describeResource
+      summary: "Describe one resource including rules and cancellation policy"
+      responses:
+        "200": { description: "Resource details" }
+    put:
+      operationId: replaceResourceConfig
+      summary: "Replace capacity, rate and house rules configured for a resource"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [seatCount, hourlyRate]
+              properties:
+                seatCount: { type: integer }
+                hourlyRate: { type: number }
+                houseRules: { type: string }
+      responses:
+        "200": { description: "Config replaced" }
+  /resource-types:
+    get:
+      operationId: getTypeCatalogue
+      summary: "List the catalogue of resource types used by search filters"
+      responses:
+        "200": { description: "Type catalogue" }
+  /availability-slots:
+    get:
+      operationId: fetchSlotsForDay
+      summary: "Fetch free and taken slots of one resource inside a single day"
+      parameters:
+        - { name: resourceParam, in: query, required: true, schema: { type: string } }
+        - { name: dayStamp, in: query, required: true, schema: { type: string } }
+        - { name: slotMinutes, in: query, schema: { type: integer } }
+      responses:
+        "200": { description: "Slot map for the day" }
+  /customers:
+    get:
+      operationId: findCustomers
+      summary: "Find customers by phone-or-email fragment and loyalty tier"
+      parameters:
+        - { name: contactFragment, in: query, schema: { type: string } }
+        - { name: tierLevel, in: query, schema: { type: string, enum: [basic, plus, vip] } }
+      responses:
+        "200": { description: "Customer matches" }
+    post:
+      operationId: registerCustomer
+      summary: "Register a customer with contact channels and billing profile"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [companyName, billingEmail]
+              properties:
+                companyName: { type: string }
+                billingEmail: { type: string }
+                dutyPhone: { type: string }
+                taxNumber: { type: string }
+      responses:
+        "201": { description: "Customer registered" }
+  /customers/{customerId}:
+    parameters:
+      - { name: customerId, in: path, required: true, schema: { type: string } }
+    get:
+      operationId: loadCustomerProfile
+      summary: "Load a customer profile with recent bookings and open balances"
+      responses:
+        "200": { description: "Customer profile" }
+    patch:
+      operationId: amendContactInfo
+      summary: "Update contact channels of a customer keeping history untouched"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                billingEmail: { type: string }
+                dutyPhone: { type: string }
+      responses:
+        "200": { description: "Contacts amended" }
+  /reviews:
+    get:
+      operationId: listReviewsForResource
+      summary: "List customer reviews of a resource above a star threshold"
+      parameters:
+        - { name: resourceIdQ, in: query, required: true, schema: { type: string } }
+        - { name: minStars, in: query, schema: { type: integer } }
+      responses:
+        "200": { description: "Review list" }
+    post:
+      operationId: submitStarReview
+      summary: "Submit a starred review after a completed booking stays closed"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [bookingBackref, starValue, reviewText]
+              properties:
+                bookingBackref: { type: string }
+                starValue: { type: integer }
+                reviewText: { type: string }
+      responses:
+        "201": { description: "Review stored" }
+  /webhooks/subscriptions:
+    get:
+      operationId: listWebhookSubscriptions
+      summary: "List webhook endpoints registered to receive office events"
+      responses:
+        "200": { description: "Subscriptions" }
+    post:
+      operationId: subscribeEventWebhook
+      summary: "Register a webhook endpoint for selected office event kinds"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [targetUrl, eventKinds]
+              properties:
+                targetUrl: { type: string }
+                eventKinds: { type: array, items: { type: string } }
+                secretHeaderName: { type: string }
+      responses:
+        "201": { description: "Subscribed" }
+  /internal/reindex-search:
+    post:
+      operationId: triggerSearchReindex
+      summary: "Internal maintenance job rebuilding the booking search index"
+      responses:
+        "202": { description: "Reindex queued" }
+  /status:
+    get:
+      operationId: getStatusPage
+      summary: "Operational status page consumed by monitoring dashboards"
+      security: []
+      responses:
+        "200": { description: "Status snapshot" }
+  /reports/dump-everything:
+    get:
+      operationId: dumpAllTables
+      responses:
+        "200": { description: "Dump stream" }
+# bearerAuth كان مُشاراً إليه دون تعريف — أُضيف التعريف الصحيح ليبقى
+# العينة المرجعية موصّفة تماماً ضمن الأنواع المدعومة (http bearer).
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

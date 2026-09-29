@@ -1,0 +1,44 @@
+openapi: 3.1.0
+info:
+  title: Legal Matters API 3.1 (synthetic)
+  version: 2.0.0
+  summary: uses 3.1-only nullable via type arrays and webhooks
+paths:
+  /matters/{matterId}:
+    get:
+      operationId: getMatter
+      summary: Fetch one matter with polymorphic payload
+      parameters:
+        - name: matterId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: oneOf union and nullable (3.1 style type arrays)
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/ClosedMatter"
+                  - $ref: "#/components/schemas/OpenMatter"
+components:
+  schemas:
+    ClosedMatter:
+      type: object
+      properties:
+        status: { type: string, enum: [closed] }
+        closedAt:
+          type: [string, "null"]
+          format: date-time
+    OpenMatter:
+      type: object
+      properties:
+        status: { type: string, enum: [open] }
+        nextHearingAt: { type: string, format: date-time }
+    MatterInput:
+      allOf:
+        - $ref: "#/components/schemas/OpenMatter"
+        - type: object
+          properties:
+            practiceArea: { type: string }

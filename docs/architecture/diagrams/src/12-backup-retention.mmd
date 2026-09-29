@@ -1,0 +1,20 @@
+%% AB-DIAG-12 — Backup/restore, retention, workspace deletion | Status: IMPLEMENTED (external KMS backups PLANNED)
+%% سياسة الاحتفاظ لكل صنف fail-closed في الإنتاج؛ auditLog وrevocations دائمان؛ الحذف مزدوج L2+L3
+flowchart TB
+  POLICY["RETENTION_POLICY_JSON - per data class: episodic 7d, snapshots 7d, audit permanent, revocations permanent"]
+  SWEEP["retention sweep - agentbridge-ops CLI"]
+  BACKUP["backup + restore tooling - verified restore, not backup only"]
+  KMSBK["external KMS-encrypted backups"]:::planned -. "PLANNED - NOT_VERIFIED" .-> BACKUP
+  DEL["workspace deletion - deletion-operations.ts"]
+  DEL2["double delete: L2 row + L3 vector atomically"]
+  KEEP["permanent classes: auditLog, revocations, semanticCore tenant-lifetime"]
+  POLICY --> SWEEP
+  SWEEP --> L1PURGE["purge expired L1 events and signed snapshots"]
+  SWEEP --> BACKUP
+  DEL --> DEL2
+  DEL --> FLYW["flywheel lessons removed from L2 and L3 index"]
+  DEL -. "audit entries survive by policy" .-> KEEP
+  classDef impl fill:#e8f5e9,stroke:#2e7d32
+  classDef planned fill:#fafafa,stroke:#9e9e9e,stroke-dasharray: 5 5
+  class POLICY,SWEEP,BACKUP,DEL,DEL2,L1PURGE,FLYW,KEEP impl
+  class KMSBK planned

@@ -1,0 +1,34 @@
+%% AB-DIAG-01 — System Context: حدود النظام والجهات الخارجية | Status: IMPLEMENTED
+%% الحدود الموثوقية: متصفح المستخدم ↔ API، والصندوق المقيد ↔ المضيف، والخادم المولّد ↔ upstream
+flowchart TB
+  subgraph EXTERNAL["External actors and systems"]
+    OWNER["API owner - vertical SaaS operator"]
+    AGENT["AI agent - MCP client"]
+    REVIEWER["Human reviewer - HITL"]
+    LLMP["LLM providers - optional: Anthropic / OpenAI"]
+    UPSTREAM["Upstream SaaS API - target system"]
+    IDP["Enterprise IdP - OIDC, optional"]
+  end
+  subgraph SYSTEM["AgentBridge system boundary"]
+    DASH["Dashboard - Next.js"]
+    API["REST API - Fastify"]
+    PIPE["Pipeline orchestrator - deterministic DAG"]
+    ART["Generated server artifact"]
+    SBX["Restricted sandbox - Docker"]
+  end
+  OWNER -- "uploads OpenAPI spec" --> DASH
+  OWNER -- "tenant API key - scrypt hashed" --> API
+  DASH -- "same-origin proxy /api/*" --> API
+  API -- "start / resume run" --> PIPE
+  PIPE -- "writes artifact" --> ART
+  PIPE -- "executes live checks HD-01 to HD-08" --> SBX
+  SBX -- "localhost only" --> ART
+  REVIEWER -- "approve / reject at HITL" --> DASH
+  AGENT -- "stdio JSON-RPC per MCP" --> ART
+  ART -- "HTTPS upstream calls" --> UPSTREAM
+  PIPE -- "optional design / evaluate / repair calls" --> LLMP
+  API -- "OIDC callback and JWKS allowlist fetch" --> IDP
+  classDef ext fill:#eef2ff,stroke:#475569
+  classDef imp fill:#e8f5e9,stroke:#2e7d32
+  class OWNER,AGENT,REVIEWER,LLMP,UPSTREAM,IDP ext
+  class DASH,API,PIPE,ART,SBX imp

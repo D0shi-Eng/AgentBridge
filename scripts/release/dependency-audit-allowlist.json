@@ -1,0 +1,12 @@
+{
+  "$schema": "agentbridge-dependency-audit-allowlist/1.0",
+  "policy": "كل تحذير تدقيق مقبول بسبب موثق وحالة معلومة — أي تحذير جديد يفشل البوابة",
+  "exceptions": [
+    {
+      "ghsa": "GHSA-ggr8-5vv4-36mx",
+      "module": "deepmerge-ts",
+      "justification": "NOT_REACHABLE — التحذير عبر سلسلة @prisma/config داخل أدوات التطوير المرجعية لprisma، والوحدة غير مستدعاة من أي مسار تنفيذي في المنتج؛ الإصلاح الجذري ترقية Prisma ويُتابع كمهمة صيانة مستقلة",
+      "status": "NOT_REACHABLE_DOCUMENTED"
+    }
+  ]
+}

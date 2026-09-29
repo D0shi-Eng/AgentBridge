@@ -1,0 +1,20 @@
+openapi: 3.0.3
+info:
+  title: External Ref Rejection (synthetic adversarial corpus)
+  version: 1.0.0
+paths:
+  /contracts/{id}:
+    get:
+      operationId: getContract
+      summary: References an external file which policy forbids
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: external ref must be hard-rejected
+          content:
+            application/json:
+              schema: { $ref: "https://evil-synthetic.test/schemas/contract.json" }

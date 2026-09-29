@@ -1,0 +1,27 @@
+%% AB-DIAG-06 — Memory layers L0..L4: trust, source, lifecycle | Status: IMPLEMENTED
+%% لا ذاكرة بلا مستأجر؛ PII محوَّر قبل L1/L3؛ كل ما عدا L2 قابل لإعادة البناء
+flowchart TB
+  L0["L0 working memory - PipelineContext in-process, dies with run"]
+  L1["L1 episodic - Redis streams + hashes, keys tenant:run:*, TTL 7d"]
+  L2["L2 semantic - PostgreSQL source of truth: tenants, specs, runs, certificates, audit"]
+  L3["L3 vector - pgvector embeddings only, no raw sensitive text"]
+  L4["L4 flywheel - structured lessons in L2, indexed in L3, topK injection"]
+  PORTS["ports in packages/memory - EpisodicStore, SemanticStore, VectorStore, FlywheelStore"]
+  INMEM["in-memory adapters - development and tests"]
+  LIVE["live adapters - PrismaFlywheelStore, PgVectorStore, node-redis"]
+  L0 -- "important state migrated" --> L1
+  L1 -- "archive" --> L2
+  L2 --> L3
+  L2 --> L4
+  L4 -- "lessons indexed" --> L3
+  PORTS --- L1
+  PORTS --- L2
+  PORTS --- L3
+  PORTS --- L4
+  PORTS --> INMEM
+  PORTS --> LIVE
+  NOTE["trust rules: tenant id mandatory on every call - PII redacted before L1/L3 - phoenix tests rebuild a run from L2+L1 alone"]
+  classDef mem fill:#e3f2fd,stroke:#1565c0
+  classDef adapter fill:#e8f5e9,stroke:#2e7d32
+  class L0,L1,L2,L3,L4,PORTS,NOTE mem
+  class INMEM,LIVE adapter

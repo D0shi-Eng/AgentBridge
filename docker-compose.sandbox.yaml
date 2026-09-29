@@ -1,0 +1,19 @@
+# الحاوية المقيدة لاختبارات التقسية (شبكة محلية فقط، بلا صلاحيات مميزة)
+# القيود الثابتة: بلا root، نظام ملفات للقراءة، بلا شبكة، سقوف صارمة.
+# التشغيل: docker compose -f docker-compose.sandbox.yaml build ثم run --rm hardening-sandbox
+services:
+  hardening-sandbox:
+    build:
+      context: .
+      dockerfile: docker/sandbox.Dockerfile
+    container_name: agentbridge-sandbox
+    read_only: true
+    user: "65532:65532"
+    cpus: 1
+    mem_limit: 512m
+    pids_limit: 64
+    security_opt:
+      - no-new-privileges
+    network_mode: none
+    tmpfs:
+      - /tmp

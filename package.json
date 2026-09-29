@@ -1,0 +1,37 @@
+{
+  "name": "agentbridge",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@11.22.0",
+  "description": "AgentBridge converts OpenAPI 3.x specifications into reviewable MCP servers with isolated security checks and verifiable evidence. | يحوّل AgentBridge مواصفات OpenAPI 3.x إلى خوادم MCP قابلة للمراجعة، مع فحوص أمنية معزولة وأدلة تحقق موثوقة.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/D0shi-Eng/AgentBridge.git"
+  },
+  "bugs": {
+    "url": "https://github.com/D0shi-Eng/AgentBridge/issues"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "build": "pnpm -r build",
+    "prepare-restricted-role": "node scripts/prepare-restricted-role.mjs"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@types/node": "^22.10.0",
+    "eslint": "^9.17.0",
+    "prettier": "^3.4.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.67.0",
+    "vitest": "^2.1.8",
+    "zod": "^3.25.76",
+    "@vitest/coverage-v8": "^2.1.8"
+  },
+  "license": "Apache-2.0"
+}

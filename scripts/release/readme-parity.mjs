@@ -2,7 +2,7 @@
  * مدقق تكافؤ README ثنائي اللغة — حزمة جاهزية المستودع الخاص.
  *
  * ماهيتها: فحص حتمي أن README.md (إنجليزي) وREADME.ar.md (عربي)
- * متكافئان بنيوياً: أقسام الإلزامية الستة عشر موجودة وبالترتيب نفسه
+ * متكافئان بنيوياً: الأقسام الإلزامية موجودة وبالترتيب نفسه
  * في النسختين، وأزرار تنقّل اللغة موجودة أعلى كل ملف.
  * وظيفتها: بوابة CI تمنع انحراف النسختين عند التعديل.
  * كيف تعمل: قائمة أزواج عناوين مرتبة (إنجليزي، عربي) — يتطلب وجود
@@ -14,27 +14,25 @@ import path from "node:path";
 
 const root = path.resolve(import.meta.dirname, "..", "..");
 
-/** الأقسام الإلزامية الستة عشر — (العنوان الإنجليزي، العنوان العربي) بالترتيب */
+/** الأقسام الإلزامية — (العنوان الإنجليزي، العنوان العربي) بالترتيب */
 const SECTIONS = [
   ["What is AgentBridge?", "ما هو AgentBridge؟"],
   ["Product Type: a Self-Hosted Web Platform", "نوع المنتج: منصة ويب ذاتية الاستضافة"],
   ["The Problem It Solves", "المشكلة التي يحلها"],
   ["Workflow: From OpenAPI to MCP", "سير العمل: من OpenAPI إلى MCP"],
-  ["Actual Capabilities", "القدرات الفعلية"],
-  ["Status Matrix", "مصفوفة الحالة"],
+  ["What You Can Do", "ماذا يمكنك فعله؟"],
   ["Architecture", "المعمارية"],
   ["Security Model and Limits", "نموذج الأمان وحدوده"],
   ["Getting Started Locally", "البدء محلياً"],
   ["Try the CLI — no keys, no services", "جرّب سطر الأوامر — بلا مفاتيح وبلا خدمات"],
-  ["Self-hosting the full platform (verified sequence)", "الاستضافة الذاتية الكاملة (تسلسل متحقق منه)"],
+  ["Operating the Local Platform", "تشغيل المنصة محليًا وصيانتها"],
   ["Optional Live Integration Tests", "اختبارات التكامل الحية الاختيارية"],
   ["Repository Layout", "بنية المستودع"],
   ["Configuration Variables", "متغيرات الإعداد"],
   ["Testing and Verification", "الاختبارات والتحقق"],
   ["Contributing and Security Reporting", "المساهمة والإبلاغ الأمني"],
-  ["Current Limitations and Risks", "القيود والمخاطر الحالية"],
+  ["Operating Boundaries", "حدود التشغيل"],
   ["License", "الترخيص"],
-  ["Production Status", "حالة الإنتاج"],
 ];
 
 function extractHeadings(markdown) {

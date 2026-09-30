@@ -55,13 +55,13 @@
     },
     {
       "path": "README.ar.md",
-      "bytes": 35587,
-      "sha256": "bdd4e1f8c723e9310e6d7bbf3bd49c21c23f3f9eafe6ac15bdc23b40b48eb6c9"
+      "bytes": 14246,
+      "sha256": "14c66f0cbae60b9bf9485defd93ec8f5e97c554fe4763e3fc32a3a667108a1ad"
     },
     {
       "path": "README.md",
-      "bytes": 26553,
-      "sha256": "4f2283979bedb0d1cef6f10a646d51422dbb58b47340115c7b451d680e24a142"
+      "bytes": 10431,
+      "sha256": "0939f963ef2179e37d5541d0902f9f90c1aaea65c7dd469a8489ff0c59c18366"
     },
     {
       "path": "SECURITY.md",
@@ -1480,13 +1480,13 @@
     },
     {
       "path": "docs/install-local.ar.md",
-      "bytes": 6358,
-      "sha256": "d8d922a03b5c07c4c2289f0617d7ba5bd0466ac338fce49d61f514799a8e8bd6"
+      "bytes": 6797,
+      "sha256": "da36034d3a534825bbb5a066a1dc9edffc7c48edd35de43e8c96d359a8d6b0f0"
     },
     {
       "path": "docs/install-local.en.md",
-      "bytes": 5086,
-      "sha256": "59864c367206731829f97a6d66402ebda9c32604c0c86c5d3417cf3abfb59ad5"
+      "bytes": 5364,
+      "sha256": "73518d77f9ec609ecce623b2599f7f6366b578cededab0ce9df3ce2abbcc5fc2"
     },
     {
       "path": "docs/memory.md",
@@ -1520,13 +1520,13 @@
     },
     {
       "path": "docs/user-guide.ar.md",
-      "bytes": 4305,
-      "sha256": "7f4adcf32747191212f8a16515210f6be3b992db1c8ac70091fa513d5832847f"
+      "bytes": 7256,
+      "sha256": "1ad26b8f3d1526ab40cc5ac9ecb182c4645e7c5c17c02f1260bc5d03e52a1292"
     },
     {
       "path": "docs/user-guide.en.md",
-      "bytes": 3188,
-      "sha256": "3ac4afaa7f5324b8078eeca437268cd907083a2436ad6dc46a648be50bafd63f"
+      "bytes": 5509,
+      "sha256": "56b338811b1d293bcae1b542a1157398eba2ce11a1e88cf27f8f047675b54116"
     },
     {
       "path": "docs/verification-and-evidence.md",
@@ -3335,8 +3335,8 @@
     },
     {
       "path": "scripts/release/readme-parity.mjs",
-      "bytes": 3902,
-      "sha256": "7b518fa71332e5c1909f56ec603e16b2afce95184023adcce71db4baac7da565"
+      "bytes": 3687,
+      "sha256": "65aae27c2c3a8432c7d0bb61db981f296e418e348c5549760d1e7145ed36d15f"
     },
     {
       "path": "scripts/release/secret-patterns.mjs",

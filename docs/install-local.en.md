@@ -24,14 +24,16 @@ deploy\local\agentbridge.cmd start    # start everything (re-runnable, no data l
 Then open the dashboard directly — no key screen:
 
 ```
-agentbridge open
+deploy\local\agentbridge.cmd open
 ```
 
-This opens your default browser at `http://127.0.0.1:3411/app` (starting the services first if they are stopped). Or type the address yourself: opening `/app` directly is enough — the local session is established automatically, with no workspace id, no API key, and no token in the URL or browser history. The admin key (`runtime\secrets\admin-credential.key`) remains for programmatic API access and ops commands, not for opening the dashboard.
+This opens your default browser at `http://127.0.0.1:3411/app` (starting services first if they are stopped). Or type the address yourself: opening `/app` directly is enough, with no workspace ID, API key, or token in the URL. The API service mentioned below is an internal component started by the package; you do not need to bring an external service or its key to open the dashboard.
 
 > Default ports: API 3410, dashboard 3411, PostgreSQL 3412, Redis 3413 — all on `127.0.0.1`, configurable in `runtime\local.env` before `setup`. Note: the dashboard's `/api` proxy is baked at build time, so changing ports requires running `setup`/`update` again.
 
 ## Commands
+
+Run the commands below from the repository root as `deploy\local\agentbridge.cmd <command>`. The bare `agentbridge` in the table is shorthand, not a command automatically added to PATH.
 
 | Command | What it does |
 | --- | --- |
@@ -49,7 +51,7 @@ This opens your default browser at `http://127.0.0.1:3411/app` (starting the ser
 | --- | --- |
 | `runtime\data\postgres` | Database files (live data) |
 | `runtime\data\redis` | Redis data (appendonly) |
-| `runtime\secrets` | Secrets: `api.env`, `ops.env`, `compose.env`, the login key — ACL-protected via icacls (current user and SYSTEM only) |
+| `runtime\secrets` | Installation secrets, including a credential for advanced programmatic access — ACL-protected via icacls (current user and SYSTEM only); not needed to open the dashboard |
 | `runtime\logs` | API and dashboard logs |
 | `runtime\backups` | Backups and their manifests |
 | `runtime\local.env` | Ports and machine settings — no secrets |
@@ -62,12 +64,12 @@ Docker's internal images stay in the default Docker Desktop store (WSL); this gu
 - **"المنفذ X مشغول"** — free the port or change ports in `runtime\local.env`, then re-run `setup`/`start`.
 - **"التثبيت غير مكتمل"** — you skipped `setup`, or a file under `runtime\secrets` was deleted.
 - **Start fails after an update** — check the last lines of `runtime\logs\api.err.log` or `docker logs agentbridge-local-postgres`.
-- **Lost the login key?** — it cannot be recovered (only a hash is stored). Delete `runtime\secrets\admin-credential.key` and re-run `setup` with a new workspace id (the previous id stays reserved).
+- **A key-entry screen appears?** — that is not the expected single-user local experience. Check the local package configuration and run `deploy\local\agentbridge.cmd open`. Do not delete installation secrets to fix a display issue.
 
 ## Local-Mode Limits (stated honestly)
 
 - **TLS:** traffic is local `http://127.0.0.1` — browsers treat it as a secure context, but this build is not meant to serve HTTPS across a network. The staging TLS mode is documented via `STAGING_HTTPS=1` and requires a local certificate plus a manual, documented trust install.
 - **NODE_ENV=development:** production mode refuses to boot locally on purpose (no external KMS provider is approved yet) — the three signing keys here are stable and generated locally by `setup`.
-- **Mock mode:** `LLM_PROVIDER=mock` needs no LLM key. To use a real provider, add `ANTHROPIC_API_KEY`/`OPENAI_API_KEY` and change `LLM_PROVIDER` in `runtime\secrets\api.env`, then `agentbridge stop && agentbridge start`.
+- **Mock mode:** `LLM_PROVIDER=mock` needs no LLM key. To use a real provider, add `ANTHROPIC_API_KEY`/`OPENAI_API_KEY` and change `LLM_PROVIDER` in `runtime\secrets\api.env`, then run `deploy\local\agentbridge.cmd stop` followed by `deploy\local\agentbridge.cmd start`.
 - **Single owner workspace per machine:** the package provisions one owner workspace; multi-tenant operation is possible via `agentbridge-ops` but is outside this package's scope.
 - **No hosted service:** there is no cloud server, no Pages, no public port — the machine stops, the platform stops.
